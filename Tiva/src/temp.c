@@ -13,99 +13,79 @@
 /**********************************************
  *        Globals
  **********************************************/
-int FLAG_TEMP = 0;
+int FLAG_Light = 0;
 struct log_struct_temp log_temp;
 
+/*for writing and reading as byte from the registers*/
+uint8_t register_data;
+
+/*for storing MSB and LSB of CH0 of lux*/
+uint16_t MSB_0;
+uint16_t LSB_0;
+
+/*for storing MSB and LSB of CH1 of lux*/
+uint16_t MSB_1;
+uint16_t LSB_1;
+
+/*16 bit value of CH0 and CH1*/
+uint16_t CH0;
+uint16_t CH1;
+float lux_send;
 /**********************************************
  *         Temperature thread
  **********************************************/
-void TempTask(void *pvParameters)
+
+void LightTask(void *pvParameters)
 {
-    UARTprintf("Created Temperature Task\n");
+    UARTprintf("Created Light Task\n");
 
-    long x_temp_id = 1002;
-    xTimerHandle xTimer_Temp;
-    xTimer_Temp = xTimerCreate("Timer_Temp",               // Just a text name, not used by the kernel.
-                                pdMS_TO_TICKS( TEMP_TIME_PERIOD_MS ),     // 1000ms
-                                pdTRUE,                    // The timers will auto-reload themselves when they expire.
-                                ( void * ) x_temp_id,      // Assign each timer a unique id equal to its array index.
-                                vTimerCallback_Temp_handler// Each timer calls the same callback when it expires.
-                               );
+        long x_light_id = 10005;
+        xTimerHandle xTimer_light;
+        xTimer_light = xTimerCreate("Timer_Light",              // Just a text name, not used by the kernel.
+                                  pdMS_TO_TICKS( TEMP_TIME_PERIOD_MS ),     // 100ms
+                                  pdTRUE,                   // The timers will auto-reload themselves when they expire.
+                                  ( void * ) x_light_id,      // Assign each timer a unique id equal to its array index.
+                                  vTimerCallback_Light_handler// Each timer calls the same callback when it expires.
+                                 );
 
-    if( xTimer_Temp == NULL )
-    {
-        // The timer was not created.
-        UARTprintf("Error on timer creation - xTimer_Temp\n");
-    }
-
-    else
-    {
-        /*start the timer*/
-         xTimerStart( xTimer_Temp, 0 );
-
-         //setup i2c
-         i2c_setup();
-
-         for(;;)
+         if( xTimer_light == NULL )
          {
-             if(FLAG_TEMP == pdTRUE)
-             {
-                 int16_t temp_value =  read_temp(TEMP_SENSOR_ADDR, TEMP_REG_OFFSET_ADDR);
-
-                 /*convert temperature to celcius*/
-                 float temperature_C;
-                 temperature_C = temp_value * 0.0625;
-
-                 int32_t temp_dec = (uint32_t)(10000.0 * temperature_C);
-
-                 sprintf(log_temp.time_stamp,"%d", xTaskGetTickCount());
-                 sprintf(log_temp.temp,"Temp = %d.%d C", (int32_t)temp_dec/10000, (int32_t)temp_dec%10000);
-
-                 //UARTprintf("%s\n",log_temp.temp);
-                 xQueueSendToBack( myQueue_temp,( void * ) &log_temp, QUEUE_TIMEOUT_TICKS ) ;
-
-                 /*Notification*/
-                 if((temperature_C > TEMP_THRESHOLD_HIGHER) || (temperature_C < TEMP_THRESHOLD_LOWER))
-                 {
-                     /*notify*/
-                     xTaskNotifyGive(handle);
-                 }
-
-                 FLAG_TEMP = pdFALSE;
-
-             }
+            // The timer was not created.
+            UARTprintf("Error on timer creation\n");
          }
+         else
+         {
+            /*Start led timer*/
+            xTimerStart( xTimer_light, 0 );
+            i2c_setup();
 
-    }
+            lux_sensor_setup();
+
+            for (;;)
+            {
+
+                if(FLAG_Light == pdTRUE)
+                {
+
+                    read_lux_CH0();
+                    read_lux_CH1();
+
+                          lux_send = lux_measurement(CH0,CH1);
+//                        char buffer_lux[BUFFER];
+//                        sprintf(buffer_lux,"%f",tx.lux);
+////                      UARTprintf("Lux [%s]\n",buffer_lux);
+
+                        xQueueSendToBack( myQueue_light,( void * ) &lux_send, QUEUE_TIMEOUT_TICKS ) ;
+
+                }
+            }
+         }
 }
 
 
-/**********************************************
- *         Alert thread
- **********************************************/
-void AlertTask(void *pvParameters)
+void vTimerCallback_Light_handler( TimerHandle_t  *pxTimer )
 {
-    for(;;)
-    {
-        uint32_t ulNotifiedValue = 0;
-
-        ulNotifiedValue  = ulTaskNotifyTake( pdTRUE, NOTIFY_TAKE_TIMEOUT  );
-
-        if(ulNotifiedValue > 0)
-        {
-            /*log the notification*/
-            xQueueSendToBack( myQueue_alert,( void * ) &ulNotifiedValue, QUEUE_TIMEOUT_TICKS ) ;
-        }
-    }
-
-}
-
-/**********************************************
- *         Temp timer handler
- **********************************************/
-void vTimerCallback_Temp_handler( TimerHandle_t  *pxTimer )
-{
-    FLAG_TEMP = pdTRUE;
+    FLAG_Light = pdTRUE;
 }
 
 
@@ -123,8 +103,6 @@ void i2c_setup()
     /*Configuring I2C SCL GPIO*/
     GPIOPinConfigure(GPIO_PN5_I2C2SCL);
 
-
-
     /*Configuring ic2 SCL*/
     GPIOPinTypeI2CSCL(GPIO_PORTN_BASE, GPIO_PIN_5);
 
@@ -139,72 +117,167 @@ void i2c_setup()
     I2CMasterInitExpClk(I2C2_BASE, output_clock_rate_hz, false);
 }
 
-int16_t read_temp(uint8_t temp_sensor_address, uint8_t register_offset)
+void lux_sensor_setup()
 {
+    /*command to write on control register*/
+    register_data = 0x03;
+    write_byte_i2c2(LIGHT_SENSOR, CONTROL_REGISTER, register_data);
 
-    /*Sets the address that the I2C Master places on the bus*/
-    I2CMasterSlaveAddrSet(I2C2_BASE, temp_sensor_address, false);
-
-    /*Transmits a byte from the I2C Master*/
-    I2CMasterDataPut(I2C2_BASE, register_offset);
-
-    /*Controls the state of the I2C Master*/
-    I2CMasterControl(I2C2_BASE, I2C_MASTER_CMD_SINGLE_SEND);
-
-
-    /*Wait until master says it is busy*/
-    while(!I2CMasterBusy(I2C2_BASE));
-
-
-    /*Indicates whether I2C Master is busy
-     * Returns true if the I2C Master is busy*/
-     while(I2CMasterBusy(I2C2_BASE));
-
-     /*Sets the address that the I2C Master places on the bus*/
-    I2CMasterSlaveAddrSet(I2C2_BASE, temp_sensor_address, true);
-
-    /*Controls the state of the I2C Master*/
-    I2CMasterControl(I2C2_BASE, I2C_MASTER_CMD_BURST_RECEIVE_START);
-
-    /*Wait until master says it is busy*/
-     while(!I2CMasterBusy(I2C2_BASE));
-
-    /*Indicates whether I2C Master is busy
-     * Returns true if the I2C Master is busy*/
-    while(I2CMasterBusy(I2C2_BASE));
-
-    /*Get the MS Byte*/
-    uint8_t higherByte = I2CMasterDataGet(I2C2_BASE);
-
-    I2CMasterControl(I2C2_BASE, I2C_MASTER_CMD_BURST_RECEIVE_FINISH);
-
-    /*Wait until master says it is busy*/
-    while(!I2CMasterBusy(I2C2_BASE));
-
-
-    /*Indicates whether I2C Master is busy
-     * Returns true if the I2C Master is busy*/
-    while(I2CMasterBusy(I2C2_BASE));
-
-    /*Get the LS Byte*/
-    uint8_t lowerByte = I2CMasterDataGet(I2C2_BASE);
-
-    /*Formatting the data*/
-    int16_t value;
-
-    value = ((higherByte << 8) | lowerByte) >> 4;
-
-    /*Checks if the value is negative
-     * Check the 12th bit*/
-    if((value & 0x800) == 0x800)
-    {
-        value = ~(value);
-        return ((value+1)*(-1));
-    }
-    else
-    {
-        /*returns the temperature*/
-        return value;
-    }
+    /*command to write on TIMING_REGISTER*/
+    register_data = 0x12;
+    write_byte_i2c2(LIGHT_SENSOR, TIMING_REGISTER, register_data);
 
 }
+
+void read_lux_CH0()
+{
+    /*command to write on control register*/
+    register_data = 0x00;
+    read_byte_i2c2(LIGHT_SENSOR, DATA0LOW_REGISTER, &register_data);
+
+    LSB_0 = 0;
+    LSB_0 = register_data;
+
+    /*command to write on TIMING_REGISTER*/
+    register_data = 0x00;
+    read_byte_i2c2(LIGHT_SENSOR, DATA0HIGH_REGISTER, &register_data);
+
+    MSB_0 = 0;
+    MSB_0 = register_data;
+
+    /*forming the full 16 bit from MSB and LSB*/
+    CH0 = (MSB_0 << 8);
+    CH0 |= LSB_0;
+
+//    UARTprintf("CH0 %d\n",CH0);
+
+}
+
+void read_lux_CH1()
+{
+    /*command to write on control register*/
+    register_data = 0x00;
+    read_byte_i2c2(LIGHT_SENSOR, DATA1LOW_REGISTER, &register_data);
+
+    LSB_0 = 0;
+    LSB_0 = register_data;
+
+    /*command to write on TIMING_REGISTER*/
+    register_data = 0x00;
+    read_byte_i2c2(LIGHT_SENSOR, DATA1HIGH_REGISTER, &register_data);
+
+    MSB_1 = 0;
+    MSB_1 = register_data;
+
+    /*forming the full 16 bit from MSB and LSB*/
+    CH1 = (MSB_1 << 8);
+    CH1 |= LSB_1;
+//    UARTprintf("CH1 %d\n",CH1);
+
+
+}
+
+void read_byte_i2c2(uint8_t slave, uint8_t register_addr, uint8_t * data)
+{
+    /*select the register to read on slave*/
+    I2CMasterSlaveAddrSet(I2C2_BASE, slave, false);
+
+    //command to write to control register
+    I2CMasterDataPut(I2C2_BASE, register_addr | WRITE_COMMAND  );
+
+    //Controls the state of the I2C Master , command
+    I2CMasterControl(I2C2_BASE, I2C_MASTER_CMD_SINGLE_SEND);
+
+    //Wait until master says it is busy
+    while(!I2CMasterBusy(I2C2_BASE));
+
+    //Indicates whether I2C Master is busy
+    while(I2CMasterBusy(I2C2_BASE));
+
+    /* reads the data*/
+    /*Sets the address that the I2C Master places on the bus*/
+     I2CMasterSlaveAddrSet(I2C2_BASE, slave, true);
+
+     I2CMasterControl(I2C2_BASE, I2C_MASTER_CMD_SINGLE_RECEIVE);
+
+     //Wait until master says it is busy
+     while(!I2CMasterBusy(I2C2_BASE));
+
+     //Indicates whether I2C Master is busy
+     while(I2CMasterBusy(I2C2_BASE));
+
+     *data = I2CMasterDataGet(I2C2_BASE);
+
+
+}
+
+
+void write_byte_i2c2(uint8_t slave, uint8_t register_addr, uint8_t data)
+{
+    /*select the register to read on slave*/
+
+    I2CMasterSlaveAddrSet(I2C2_BASE, slave, false);
+
+    //command to write to control register
+    I2CMasterDataPut(I2C2_BASE, register_addr | WRITE_COMMAND  );
+
+    //Controls the state of the I2C Master , command
+    I2CMasterControl(I2C2_BASE, I2C_MASTER_CMD_SINGLE_SEND);
+
+    //Wait until master says it is busy
+    while(!I2CMasterBusy(I2C2_BASE));
+
+    //Indicates whether I2C Master is busy
+    while(I2CMasterBusy(I2C2_BASE));
+
+    I2CMasterDataPut(I2C2_BASE, data);
+
+
+     I2CMasterControl(I2C2_BASE, I2C_MASTER_CMD_SINGLE_SEND);
+
+     //Wait until master says it is busy
+     while(!I2CMasterBusy(I2C2_BASE));
+
+     //Indicates whether I2C Master is busy
+     while(I2CMasterBusy(I2C2_BASE));
+
+
+}
+
+
+/*****************************************************************
+                     Getting lux value
+*****************************************************************/
+float lux_measurement(float CH0, float CH1)
+{
+
+    float ratio = (CH1 / CH0);
+
+
+
+    //0 < CH1/CH0 ≤ 0.50 Sensor Lux = (0.0304 x CH0) – (0.062 x CH0 x ((CH1/CH0)1.4))
+
+    if((ratio <=0.5)&& (ratio > 0))
+        return ((0.0304 * CH0) - (0.062 * CH0 * (powf(ratio, 1.4))));
+
+    //0.50 < CH1/CH0 ≤ 0.61 Sensor Lux = (0.0224 x CH0) – (0.031 x CH1)
+
+    else if((ratio  > 0.5)&& (ratio <= 0.61))
+        return ((0.0224 * CH0) - (0.031 * CH1));
+
+    //0.61 < CH1/CH0 ≤ 0.80 Sensor Lux = (0.0128 x CH0) – (0.0153 x CH1)
+    else if((ratio  > 0.61)&& (ratio <= 0.8))
+        return (0.0128 * CH0) - (0.0153 * CH1);
+
+    //0.80 < CH1/CH0 ≤ 1.30 Sensor Lux = (0.00146 x CH0) – (0.00112 x CH1)
+    else if((ratio  > 0.80)&& (ratio <= 1.30))
+        return (0.00146 * CH0) - (0.00112 * CH1);
+
+    //CH1/CH0>1.30 Sensor Lux = 0
+    else
+        return 0;
+
+
+}
+
+

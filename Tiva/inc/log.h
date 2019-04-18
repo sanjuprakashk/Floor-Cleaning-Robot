@@ -24,10 +24,12 @@
  **********************************************/
 #define QueueLength (100)
 #define TIMEOUT_TICKS (10)
+#define BUFFER (50)
+
 /**********************************************
  *        Global declarations
  **********************************************/
-extern QueueHandle_t myQueue_temp, myQueue_led, myQueue_alert;
+extern QueueHandle_t myQueue_light, myQueue_ultra;
 
 /**********************************************
  *        Function Prototypes
@@ -45,5 +47,7 @@ void queue_init();
  * Description : Thread for logger task
  ********************************************/
 void LogTask(void *pvParameters);
+
+void UART_send(char* ptr, int len);
 
 #endif /* LOG_H_ */

@@ -12,13 +12,14 @@
 #include "object_detection.h"
 
 uint32_t start, end;
-uint32_t FLAG_UL, sensor_busy;
-float time;
+uint32_t FLAG_UL, conv_complete = 0;
+float time = 0;
+float distance_send;
+
 
 void init_ultrasonic_sensor()
 {
     SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER2);
-    vTaskDelay(pdMS_TO_TICKS( 1 ));
     TimerConfigure(TIMER2_BASE, TIMER_CFG_PERIODIC_UP);
 
 
@@ -49,6 +50,7 @@ void init_ultrasonic_sensor()
 void find_object()
 {
     GPIOPinWrite(GPIO_PORTF_BASE,GPIO_PIN_1, 0);
+    vTaskDelay(pdMS_TO_TICKS( 1 ));
     GPIOPinWrite(GPIO_PORTF_BASE,GPIO_PIN_1, GPIO_PIN_1);
     vTaskDelay(pdMS_TO_TICKS( 10 ));
     GPIOPinWrite(GPIO_PORTF_BASE,GPIO_PIN_1, 0);
@@ -57,7 +59,6 @@ void find_object()
 
 void PortFIntHandler()
 {
-    UARTprintf("Entered handler\n");
 
 
     taskENTER_CRITICAL();
@@ -70,19 +71,18 @@ void PortFIntHandler()
         {
             HWREG(TIMER2_BASE + TIMER_O_TAV) = 0;
             TimerEnable(TIMER2_BASE,TIMER_A);
-            start = 0;
-            UARTprintf("start %d\n", (start));
+            start = TimerValueGet(TIMER2_BASE,TIMER_A);
+            conv_complete = 0;
 
         }
+
         else
         {
+
             end = TimerValueGet(TIMER2_BASE,TIMER_A);
             TimerDisable(TIMER2_BASE,TIMER_A);
-            //time = end - start;
-            UARTprintf("end %d\n", (end));
-           // char buf[30];
-           // sprintf(buf,"time %f\n", (time));
-           // UARTprintf("time %s\n", (buf));
+            time = end - start;
+            conv_complete = 1;
 
 
         }
@@ -124,13 +124,29 @@ void UtrasonicTask(void *pvParameters)
          //setup i2c
          init_ultrasonic_sensor();
 
+
+
          for(;;)
          {
              if(FLAG_UL == pdTRUE)
              {
                  find_object();
+
+                 if((conv_complete == 1))
+                 {
+                     distance_send = (((float)(1.0/(output_clock_rate_hz/1000000))*time)/58);
+//                     char buf_ult[BUFFER];
+//                     sprintf(buf_ult,"%f",(((float)(1.0/(output_clock_rate_hz/1000000))*time)/58));
+//                 //  UARTprintf("Distance [%s]\n",buf_ult);
+//                     UART_send(ptr, sizeof(tx));
+                     xQueueSendToBack( myQueue_ultra,( void * ) &distance_send, QUEUE_TIMEOUT_TICKS ) ;
+
+                 }
                  FLAG_UL = pdFALSE;
+
              }
+
+
          }
 
     }

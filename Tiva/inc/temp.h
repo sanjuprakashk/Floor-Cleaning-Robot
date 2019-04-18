@@ -12,12 +12,15 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
 #include "timers.h"
+#include "utils/uartstdio.h"
+#include "uart.h"
 #include "driverlib/gpio.h"
 #include "driverlib/inc/hw_memmap.h"
 #include "driverlib/pin_map.h"
@@ -29,14 +32,31 @@
 /**********************************************
  *        MACRO
  **********************************************/
-#define TEMP_THRESHOLD_HIGHER (28)
-#define TEMP_THRESHOLD_LOWER  (23)
+#define CONTROL_REGISTER (0X00)
+#define TIMING_REGISTER (0X01)
+#define THRESHLOWLOW (0x02)
+#define THRESHLOWHIGH (0x03)
+#define THRESHHIGHLOW (0x04)
+#define THRESHHIGHHIGH (0x05)
+#define INTERRUPT (0x06)
+#define INDICATION_REGISTER (0x0A)
+#define DATA0LOW_REGISTER (0X0C)
+#define DATA0HIGH_REGISTER (0X0D)
+#define DATA1LOW_REGISTER (0X0E)
+#define DATA1HIGH_REGISTER (0X0F)
+
+#define WRITE_COMMAND (0x80)
+
 
 #define QUEUE_TIMEOUT_TICKS (10)
 #define NOTIFY_TAKE_TIMEOUT (500)
 #define TEMP_TIME_PERIOD_MS (1000)
 #define TEMP_SENSOR_ADDR (0x48)
 #define TEMP_REG_OFFSET_ADDR (0x00)
+#define LIGHT_SENSOR (0x39)
+
+#define BUFFER (50)
+
 /**********************************************
  *        GLOBALS
  **********************************************/
@@ -60,7 +80,7 @@ extern TaskHandle_t handle;
 
 extern uint32_t output_clock_rate_hz;
 
-extern QueueHandle_t myQueue_temp, myQueue_alert;
+extern QueueHandle_t myQueue_light;
 
 /**********************************************
  *        Function Prototypes
@@ -70,34 +90,27 @@ extern QueueHandle_t myQueue_temp, myQueue_alert;
  * Parameters:   none
  * Description : Thread for temperature task
  ********************************************/
-void TempTask(void *);
-
+void LightTask(void *pvParameters);
 /********************************************
  * Func name :   vTimerCallback_Temp_handler
  * Parameters:   none
  * Description : handler for temperature timer
  ********************************************/
-void vTimerCallback_Temp_handler( TimerHandle_t  *);
+void vTimerCallback_Light_handler( TimerHandle_t  *);
 
 /********************************************
  * Func name :   i2c_setup
  * Parameters:   none
  * Description : Configuration of i2c bus
  ********************************************/
-void i2c_setup(void);
+void i2c_setup();
+void read_lux_CH0();
+void read_lux_CH1();
+void lux_sensor_setup();
+void read_byte_i2c2(uint8_t slave, uint8_t register_addr, uint8_t *data);
+void write_byte_i2c2(uint8_t slave, uint8_t register_addr, uint8_t data);
+float lux_measurement(float , float );
 
-/********************************************
- * Func name :   read_temp
- * Parameters:   slave address, register address
- * Description : reads the temperature
- ********************************************/
-int16_t read_temp(uint8_t , uint8_t);
-
-/********************************************
- * Func name :   AlertTask
- * Parameters:   none
- * Description : Thread for alert task
- ********************************************/
-void AlertTask(void *);
-
+void I2CSendByte(uint8_t target_address, uint8_t register_address, uint8_t data);
+uint8_t I2CGetByte(uint8_t target_address, uint8_t register_address);
 #endif /* TEMP_H_ */

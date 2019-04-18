@@ -10,30 +10,31 @@
 /**********************************************
  *        Global definitions
  **********************************************/
-struct log_struct_temp log_temp_recv;
-struct log_struct_led log_led_recv;
+struct communication
+{
+    float lux;
+    float distance;
+};
 
+struct communication tx;
 
+float lux_recv, distance_recv;
 
 void queue_init()
 {
-    myQueue_temp = xQueueCreate(QueueLength, sizeof(log_temp_recv));
-    if(myQueue_temp == NULL)
+    myQueue_light = xQueueCreate(QueueLength, sizeof(float));
+    if(myQueue_light == NULL)
     {
-        UARTprintf("error on queue creation myQueue_temp\n");
+        UARTprintf("error on queue creation myQueue_light\n");
     }
 
-    myQueue_led = xQueueCreate(QueueLength, sizeof(log_led_recv));
-    if(myQueue_led == NULL)
+    myQueue_ultra = xQueueCreate(QueueLength, sizeof(float));
+    if(myQueue_ultra == NULL)
     {
-        UARTprintf("error on queue creation myQueue_led\n");
+        UARTprintf("error on queue creation myQueue_ultra\n");
     }
 
-    myQueue_alert = xQueueCreate(QueueLength, sizeof(uint32_t));
-    if(myQueue_alert == NULL)
-    {
-        UARTprintf("error on queue creation myQueue_alert\n");
-    }
+
 
 }
 
@@ -42,21 +43,49 @@ void queue_init()
  **********************************************/
 void LogTask(void *pvParameters)
 {
-    int temp_notf;
+
+    char buffer[50];
+    unsigned char *ptr;
+    ptr = (uint8_t *) (&tx);
 
     for(;;)
     {
-        if(xQueueReceive(myQueue_led, &log_led_recv, TIMEOUT_TICKS ) == pdTRUE )
-            UARTprintf("[%s]--->LED   name: %s toggle count: %d\n",log_led_recv.time_stamp,log_led_recv.name,log_led_recv.count);
+        if(xQueueReceive(myQueue_light, &lux_recv, TIMEOUT_TICKS ) == pdTRUE )
+        {
 
-        if(xQueueReceive(myQueue_temp, &log_temp_recv, TIMEOUT_TICKS ) == pdTRUE )
-            UARTprintf("[%s]--->Temp  temp: %s\n",log_temp_recv.time_stamp,log_temp_recv.temp);
+            tx.lux = lux_recv;
+            sprintf(buffer, "%f",tx.lux);
+            //UARTprintf("Lux %s\n",buffer);
 
-        if(xQueueReceive(myQueue_alert, &temp_notf, TIMEOUT_TICKS ) == pdTRUE )
-            UARTprintf("------------->Temp out of range - notified\n");
+
+
+//                UARTprintf("size %d\n",sizeof(tx));
+
+                //UART_send(ptr, sizeof(tx));
+
+
+        }
+
+        if(xQueueReceive(myQueue_ultra, &distance_recv, TIMEOUT_TICKS ) == pdTRUE )
+        {
+            tx.distance = distance_recv;
+            sprintf(buffer, "%f",tx.distance);
+           // UARTprintf("Dis %s\n",buffer);
+            UART_send(ptr, sizeof(tx));
+        }
+
+
 
     }
 }
 
 
-
+void UART_send(char* ptr, int len)
+{
+    while(len != 0)
+    {
+        UARTCharPut(UART2_BASE, *ptr);
+        ptr++;
+        len--;
+    }
+}

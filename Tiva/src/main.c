@@ -37,6 +37,8 @@
 #include "object_detection.h"
 #include "uart.h"
 #include "interrupt.h"
+#include "rom.h"
+#include "driverlib/fpu.h"
 
 /**********************************************
  *        Function Prototypes
@@ -56,13 +58,15 @@ void ConfigureUART1();
  ********************************************/
 void vTimerCallback_LED_handler( TimerHandle_t  *pxTimer );
 
+void ActuatorTask(void *pvParameters);
+
 /**********************************************
  *        Globals
  **********************************************/
-QueueHandle_t myQueue_temp, myQueue_led, myQueue_alert;
+QueueHandle_t myQueue_ultra, myQueue_light;
+
 struct log_struct_led log_led;
 uint32_t output_clock_rate_hz;
-void UART_send(char* ptr, int len);
 
 //For temperature notification
 TaskHandle_t handle;
@@ -80,6 +84,11 @@ TaskHandle_t handle;
 /**********************************************
  *        Main Function
  **********************************************/
+
+
+
+
+
 int main(void)
 {
     // Initialize system clock to 120 MHz
@@ -91,83 +100,86 @@ int main(void)
 
     // Initialize the GPIO pins for the Launchpad
     PinoutSet(false, false);
+    FPUEnable();
 
     // Set up the UART which is connected to the virtual COM port
 
 
     UARTStdioConfig(0, 115200, SYSTEM_CLOCK);
-//
-//    UARTStdioConfig(2, 115200, SYSTEM_CLOCK);
 
     queue_init();
-    //ConfigureUART1();
+
+
+    ConfigureUART1();
     ConfigureUART2();
 
-    char buf[30];
-    memset(buf,'\0',sizeof(buf));
-
-    sprintf(buf, "12345678901234567890123456789");
+//    IntEnable(INT_UART1);
+    //ROM_UARTIntEnable(UART1_BASE, UART_INT_RX | UART_INT_RT);
+    //IntEnable(INT_UART1);
 
 
 //
+//    unsigned char *ptr;
+//    ptr = (uint8_t *) (&tx);
+//
+//    UARTprintf("size %d\n",sizeof(tx));
+//    for(;;)
+//    {
+//        UART_send(ptr, sizeof(tx));
+//
+//        //UARTprintf("sent\n");
+//    }
 
-        UART_send(buf, sizeof(buf));
+//        while(UARTCharsAvail(UART1_BASE))
+//            {
+//               char c = ROM_UARTCharGet(UART1_BASE);
+//                UARTprintf("%c", c);
+//            }
+
+
         //UARTprintf("%s", buf);
 
 
 
-//    for(;;)
-//    {
-////        UART_send(buf, sizeof(buf));
-//        while(UARTCharsAvail(UART2_BASE))
-//        {
-//            char c = ROM_UARTCharGet(UART2_BASE);
-//            UARTprintf("%c", c);
-//        }
-//}
+//
 
-
-    // Create led task
-   // xTaskCreate(LEDTask, (const portCHAR *)"LEDs",
-       //        configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+    // Create light task
+   xTaskCreate(LightTask, (const portCHAR *)"Light",
+               configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
     // Create logger task
-   // xTaskCreate(LogTask, (const portCHAR *)"Log",
-        //            configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+    xTaskCreate(LogTask, (const portCHAR *)"Log",
+                    configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
 
     // Create temp task
-   // xTaskCreate(UtrasonicTask, (const portCHAR *)"ultrasonic",
-    //                   configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+    xTaskCreate(UtrasonicTask, (const portCHAR *)"ultrasonic",
+                       configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
-    // Create alert task
-    //xTaskCreate(AlertTask, (const portCHAR *)"alert",
-               //            configMINIMAL_STACK_SIZE, NULL, 1, &handle);
+    // Create temp task
+       xTaskCreate(ActuatorTask, (const portCHAR *)"Actuator",
+                          configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
 
     /*start the schedule*/
-    //vTaskStartScheduler();
+    vTaskStartScheduler();
 
     return 0;
 
 }
 
-
-/**********************************************
- *        LED Thread
- **********************************************/
-void LEDTask(void *pvParameters)
+void ActuatorTask(void *pvParameters)
 {
-    //UARTprintf("LED T\n");
-    //InitSPI();
     for(;;)
-    {
-
+        {
+            while(UARTCharsAvail(UART1_BASE))
+            {
+                char c = ROM_UARTCharGet(UART1_BASE);
+                UARTprintf("Object detected %c\n", c);
+            }
     }
+
 }
-
-
-
 
 /*  ASSERT() Error function
  *
@@ -202,49 +214,30 @@ void ConfigureUART2(void)
 
 }
 
-void UART_send(char* ptr, int len)
-{
-    while(len != 0)
-    {
-        UARTCharPut(UART2_BASE, *ptr);
-        ptr++;
-        len--;
-    }
-}
+
 
 
 //Receive
-//void ConfigureUART1()
-//{
-//        ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);    //Enable GPIO
+void ConfigureUART1()
+{
+
+        ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);    //Enable GPIO
+
+        ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_UART1);    //Enable UART0
+
+        ROM_GPIOPinConfigure(GPIO_PB0_U1RX);                //Configure UART pins
+        ROM_GPIOPinConfigure(GPIO_PB1_U1TX);
+        ROM_GPIOPinTypeUART(GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1);
+
+
+        ROM_UARTConfigSetExpClk(UART1_BASE, output_clock_rate_hz, 115200,
+                                    (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
+                                                UART_CONFIG_PAR_NONE));
+
+        UARTprintf("configured 1\n");
+
+
 //
-//        ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_UART1);    //Enable UART0
-//
-//        ROM_GPIOPinConfigure(GPIO_PB0_U1RX);                //Configure UART pins
-//        ROM_GPIOPinConfigure(GPIO_PB1_U1TX);
-//        ROM_GPIOPinTypeUART(GPIO_PORTB_BASE, GPIO_PIN_0 | GPIO_PIN_1);
-//
-//        ROM_UARTConfigSetExpClk(UART1_BASE, output_clock_rate_hz, 115200,
-//                                    (UART_CONFIG_WLEN_8 | UART_CONFIG_STOP_ONE |
-//                                                UART_CONFIG_PAR_NONE));
-//
-//        UARTprintf("configured 1\n");
-//
-//        IntEnable(INT_UART1);
-//        ROM_UARTIntEnable(UART1_BASE, UART_INT_RX | UART_INT_RT);
-//
-//}
-//
-//void UARTIntHandler()
-//{
-//    char c;
-//    uint32_t status = ROM_UARTIntStatus(UART1_BASE, true);
-//    ROM_UARTIntClear(UART1_BASE, status);
-//    while(UARTCharsAvail(UART1_BASE))
-//    {
-//        c = ROM_UARTCharGet(UART1_BASE);
-//        UARTprintf("%c", c);
-//    }
-//
-//}
-//
+
+}
+
