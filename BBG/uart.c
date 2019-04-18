@@ -1,8 +1,4 @@
-/*
-@author: Sanju Prakash Kannioth
-Referencea : https://github.com/sijpesteijn/BBCLib,
-			 https://en.wikibooks.org/wiki/Serial_Programming/termios 
-*/
+/*Reference : https://github.com/sijpesteijn/BBCLib */
 
 #include <stdio.h>
 #include <string.h>
@@ -15,8 +11,8 @@ Referencea : https://github.com/sijpesteijn/BBCLib,
 
 
 typedef struct {
-	uint32_t lux;
-	uint32_t temp;
+	float lux;
+	float temp;
 } communication;
 
 
@@ -87,24 +83,25 @@ int8_t uart_config(uart_properties *uart)
 	return 0;
 }
 
-int8_t uart_send(uart_properties *uart, communication *tx, int length) {
-	if (write(uart->fd, tx, sizeof(communication)) == -1) {
+int8_t uart_send(uart_properties *uart, char *tx, int length) {
+	if (write(uart->fd, tx, length) == -1) {
 		printf("Error in write\n");
 		return -1;
 	}
-	printf("Wrote %s to uart %i\n", tx, uart->uart_no);
+	printf("Wrote %c to uart %i\n", *tx, uart->uart_no);
 	return 0;
 }
 
 
 int8_t uart_receive(uart_properties *uart, communication *rx, int length) {
-	if (read(uart->fd, (char *)rx, sizeof(communication)) == -1) {
+	int count = 0;
+	if ((count = read(uart->fd, (char *)rx, sizeof(communication))) == -1) {
 		printf("Error in read\n");
 		return -1;
 	}
 
-	printf("Read %s from uart %i\n", rx, uart->uart_no);
-	return 0;
+	printf("Read %f %f from uart %i\n", rx->lux, rx->temp, uart->uart_no);
+	return count;
 }
 
 int8_t uart_close(uart_properties *uart) {
@@ -130,6 +127,8 @@ int main()
 	uint8_t isOpen4 = uart_config(uart4);
 	int i = 0;
 	printf("Open success? %d\n", isOpen);
+	printf("SIZE OF FLOAT = %d", sizeof(float));
+	char test = '1';
 	if (isOpen == 0) {
 		unsigned char receive[30];
 		while(1)
@@ -138,25 +137,32 @@ int main()
 			char buf[30];
 			// sprintf(buf, "foo %d", ++i);
 
-			comm.lux = 100;
+/*			comm.lux = 100;
 			comm.temp = 23;
 
 			// Send data to uart1
-			if (uart_send(uart, &comm, strlen(buf) + 1) < 0) {
+			if (uart_send(uart, &comm, sizeof(communication)) < 0) {
 				printf("Could not send data to uart port");
 				return -1;
 			}
 
-
+*/
 			usleep(1000000);
 
 
 			comm_rec.lux = 0;
 			comm_rec.temp = 0;
-			uart_receive(uart,&comm_rec,30);
-			printf("\n\nLux = %d \t\t Temp = %d\n\n",comm_rec.lux,comm_rec.temp);
-            sprintf(buf,"test uart 1");
-			
+			if(uart_receive(uart4,&comm_rec, sizeof(communication)) > 0)
+			{
+				printf("\n\nLux = %f \t\t Temp = %f\n\n",comm_rec.lux,comm_rec.temp);
+				if(comm_rec.temp < 10)
+				{
+					uart_send(uart, &test, sizeof(char));
+				}
+			}
+
+			//sprintf(buf,"test uart 1");
+
 			// uart_send(uart, buf, strlen(buf) + 1);
 			// usleep(100000);
 			// // Read data from uart1
@@ -171,4 +177,5 @@ int main()
 	printf("EOF\n");
 	return 0;
 }
+
 
