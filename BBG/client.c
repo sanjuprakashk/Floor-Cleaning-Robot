@@ -126,7 +126,7 @@ void main()
             if (child_id > 0)
             {
                 close(new_socket);
-                // waitpid(0, NULL, WNOHANG);  //Wait for state change of the child process
+                waitpid(0, NULL, WNOHANG);  //Wait for state change of the child process
             }
 
             if(child_id == 0)
