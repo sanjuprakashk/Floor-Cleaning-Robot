@@ -1,16 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <errno.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-
-#define PORT_NO 8003
+#include "server.h"
 /*****************************************************************
                         Globals
 *****************************************************************/
@@ -72,7 +60,7 @@ int socket_creation_server(int port)
        Function for remote request thread creation
        Parameters : Structure typecasted to void *
 ***************************************************/
-void main()
+void *remote_request_callback()
 {
   
 
