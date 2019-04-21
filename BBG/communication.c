@@ -18,6 +18,8 @@ char *get_distance()
 void *communication_thread_callback()
 {
 
+	printf("Inside communication thread\n");
+
 	communication comm;
 
 	uart_properties *uart1  = malloc(sizeof(uart_properties));
