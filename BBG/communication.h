@@ -4,6 +4,8 @@
 
 #include "uart.h"
 
+char lux[10];
+char distance[10];
 pthread_t communication_thread;
 
 communication comm_rec;
@@ -11,8 +13,8 @@ communication comm_rec;
 void *communication_thread_callback();
 
 
-float get_lux();
+char *get_lux();
 
-float get_distance();
+char *get_distance();
 
 #endif

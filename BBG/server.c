@@ -129,20 +129,18 @@ void *remote_request_callback()
                {
                     printf("Received request for display\n");
 
-                    char lux[10];
-                    memset(lux,'\0',10);
-                    strcpy(lux,"100");
+                    char lux_send[10];
+                    strcpy(lux_send, get_lux());
                     send(new_socket, lux, 10 , 0);
 
-                    char motion[10];
-                    memset(motion,'\0',10);
-                    strcpy(motion,"yes");
-                    send(new_socket, motion, 10 , 0);
+                    char distance_send[10];
+                    strcpy(distance_send, get_distance());
+                    send(new_socket, distance_send, 10 , 0);
 
-                    char water[10];
-                    memset(water,'\0',10);
-                    strcpy(water,"23");
-                    send(new_socket, water, 10 , 0);
+                    // char water[10];
+                    // memset(water,'\0',10);
+                    // strcpy(water,"23");
+                    // send(new_socket, water, 10 , 0);
                }
                 
             }

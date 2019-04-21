@@ -3,7 +3,6 @@
 
 char *get_lux()
 {
-	char lux[10];
 	memset(lux,' ',sizeof(lux));
 	sprintf(lux,"%f",comm_rec.lux);
 	return lux;
@@ -11,7 +10,6 @@ char *get_lux()
 
 char *get_distance()
 {
-	char distance[10];
 	memset(distance,' ',sizeof(distance));
 	sprintf(distance,"%f",comm_rec.distance);
 	return distance;

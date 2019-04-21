@@ -85,4 +85,3 @@ int8_t uart_close(uart_properties *uart) {
 }
 
 
-
