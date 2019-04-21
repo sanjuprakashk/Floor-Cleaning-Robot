@@ -21,4 +21,8 @@ int main()
 	{
 		perror("Communication thread creation failed");
 	}
+
+	printf("Threads created successfully\n");
+
+	return 0;
 }
