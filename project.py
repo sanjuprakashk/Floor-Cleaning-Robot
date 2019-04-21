@@ -26,18 +26,19 @@ class mywindow(QtWidgets.QDialog):
             s.connect((HOST,PORT))
 
 
-            data = s.recv(5)
+            s.sendall(b'display')
 
-            if data :
-                print('recv ',data)
-                lux_value = 100
-                self.ui.lux.setText(str(lux_value))
+            lux_value = s.recv(10)
+            print("lux value ", lux_value)
+            self.ui.lux.setText(str(lux_value))
 
-                motion_value = "yes"
-                self.ui.motion.setText(motion_value)
-
-                water_value = 1
-                self.ui.water.setText(str(water_value))
+            motion_value = s.recv(10)
+            print("motion_value ", motion_value)
+            self.ui.motion.setText(str(motion_value))
+            
+            water_value = s.recv(10)
+            print("water_value ", water_value)
+            self.ui.water.setText(str(water_value))
 
     def poweron_call(self):
         print ("Powered on\n")

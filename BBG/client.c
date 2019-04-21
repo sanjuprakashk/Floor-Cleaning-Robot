@@ -5,6 +5,10 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <errno.h>
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #define PORT_NO 8003
 /*****************************************************************
@@ -72,7 +76,7 @@ void main()
 {
   
 
-  char buffer[5];
+  char buffer[10];
     
     
     
@@ -85,7 +89,7 @@ void main()
     } 
 
 
-    while(1)
+   while(1)
     {
         new_socket = 0;
         memset(&to_address,0,sizeof(to_address));
@@ -94,49 +98,68 @@ void main()
         clilen = sizeof(to_address);
 
         /*accepting client requests*/
-        
-          new_socket = accept(server_socket,(struct sockaddr*) &to_address, &clilen) ;
+        new_socket = accept(server_socket,(struct sockaddr*) &to_address, &clilen);
+        if(new_socket<0)
+        {
+            perror("Error on accepting client");
+        }
+        else
+        {
+            printf("established connection\n");
+        }
 
-          while(new_socket > 0)
-          {
+        /*Forked the request received so as to accept multiple clients*/
+      int child_id = 0;
+        /*Creating child processes*/
+        /*Returns zero to child process if there is successful child creation*/
+        child_id = fork();
 
-            if(new_socket<0)
+        // error on child process
+        if(child_id < 0)
+        {
+            perror("error on creating child\n");
+            exit(1);
+        }
+
+        //closing the parent
+        if (child_id > 0)
+        {
+            close(new_socket);
+            waitpid(0, NULL, WNOHANG);  //Wait for state change of the child process
+        }
+
+        if(child_id == 0)
+        {
+
+            memset(buffer,'\0',sizeof(buffer));
+            while(recv(new_socket, buffer ,10, 0) > 0)
             {
-              perror("Error on accepting client");
+            
+              //printf("Received request %s - %ld\n",buffer,strlen(buffer));
+
+               if(strcmp(buffer,"display")==0)
+               {
+                    printf("Received request for display\n");
+
+                    char lux[10];
+                    memset(lux,'\0',10);
+                    strcpy(lux,"100");
+                    send(new_socket, lux, 10 , 0);
+
+                    char motion[10];
+                    memset(motion,'\0',10);
+                    strcpy(motion,"yes");
+                    send(new_socket, motion, 10 , 0);
+
+                    char water[10];
+                    memset(water,'\0',10);
+                    strcpy(water,"23");
+                    send(new_socket, water, 10 , 0);
+               }
+                
             }
-            else
-            {
-              printf("established connection\n");
-            }
-
-            /*Forked the request received so as to accept multiple clients*/
-            int child_id = 0;
-            /*Creating child processes*/
-            /*Returns zero to child process if there is successful child creation*/
-            child_id = fork();
-
-            // error on child process
-            if(child_id < 0)
-            {
-              perror("error on creating child\n");
-              exit(1);
-            }
-
-            //closing the parent
-            if (child_id > 0)
-            {
-                close(new_socket);
-                waitpid(0, NULL, WNOHANG);  //Wait for state change of the child process
-            }
-
-            if(child_id == 0)
-            {
-              strcpy(buffer,"hi");
-              send(new_socket, buffer, 5, 0);
-            }  
-          }
-          close(new_socket);
-          exit(0); 
-        
+            close(new_socket);
+            exit(0); 
+        }
     }   
 }   

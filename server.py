@@ -4,13 +4,25 @@ HOST = '127.0.0.1'
 PORT = 8003
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-		s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		s.bind((HOST,PORT))
-		s.listen(5)
+		#s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		
+		s.connect((HOST,PORT))
+	
+		s.sendall(b'display')
 
-		while True:
-			new, addr = s.accept()
-			with new:
-				print('connected by',addr)
-				data = new.sendall(b'Hi')
+		lux_value = s.recv(10)
+		print("lux value ", lux_value)
+		#self.ui.lux.setText((lux_value))
+
+		motion_value = s.recv(10)
+		print("motion_value ", motion_value)
+		#self.ui.motion.setText((motion_value))
+
+		water_value = s.recv(10)
+		print("water_value ", water_value)
+		#self.ui.water.setText((water_value))
+
+
+
+
 
