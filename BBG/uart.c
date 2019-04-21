@@ -128,7 +128,8 @@ int main()
 	int i = 0;
 	printf("Open success? %d\n", isOpen);
 	printf("SIZE OF FLOAT = %d", sizeof(float));
-	char test = '1';
+	char obj_detect = '1';
+	char night_time = '2';
 	if (isOpen == 0) {
 		unsigned char receive[30];
 		while(1)
@@ -141,7 +142,7 @@ int main()
 			comm.temp = 23;
 
 			// Send data to uart1
-			if (uart_send(uart, &comm, sizeof(communication)) < 0) {
+			if (uart_send(uart, &obj_detect, sizeof(communication)) < 0) {
 				printf("Could not send data to uart port");
 				return -1;
 			}
@@ -157,7 +158,12 @@ int main()
 				printf("\n\nLux = %f \t\t Temp = %f\n\n",comm_rec.lux,comm_rec.temp);
 				if(comm_rec.temp < 10)
 				{
-					uart_send(uart, &test, sizeof(char));
+					uart_send(uart, &obj_detect, sizeof(char));
+				}
+
+				if(comm_rec.lux < 10)
+				{
+					uart_send(uart, &night_time, sizeof(char));
 				}
 			}
 
