@@ -58,24 +58,27 @@ int8_t uart_config(uart_properties *uart)
 	return 0;
 }
 
-int8_t uart_send(uart_properties *uart, char *tx, int length) {
+int8_t uart_send(uart_properties *uart, void *tx, int length) {
 	if (write(uart->fd, tx, length) == -1) {
 		printf("Error in write\n");
 		return -1;
 	}
-	printf("Wrote %c to uart %i\n", *tx, uart->uart_no);
+
+	struct sensor_struct *tx_r = tx;
+	printf("Wrote %f to uart %i\n", tx_r->sensor_data, uart->uart_no);
 	return 0;
 }
 
 
-int8_t uart_receive(uart_properties *uart, communication *rx, int length) {
+int8_t uart_receive(uart_properties *uart, void *rx, int length) {
 	int count = 0;
-	if ((count = read(uart->fd, (char *)rx, sizeof(communication))) == -1) {
+	if (count = read(uart->fd, (char *)rx, sizeof(struct logger_struct)) == -1) {
 		printf("Error in read\n");
 		return -1;
 	}
 
-	printf("Read %f %f from uart %i\n", rx->lux, rx->distance, uart->uart_no);
+	struct sensor_struct *rx_r = rx;
+	printf("Read %f from uart %i\n", rx_r->sensor_data, uart->uart_no);
 	return count;
 }
 

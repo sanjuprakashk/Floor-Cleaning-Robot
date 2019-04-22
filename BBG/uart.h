@@ -9,6 +9,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+
+#include "logger.h"
 typedef struct {
 	float lux;
 	float distance;
@@ -26,9 +28,9 @@ typedef struct {
 }uart_properties;
 
 
-int8_t uart_send(uart_properties *uart, char *tx, int length);
+int8_t uart_send(uart_properties *uart, void *tx, int length);
 
-int8_t uart_receive(uart_properties *uart, communication *rx, int length);
+int8_t uart_receive(uart_properties *uart, void *rx, int length);
 
 int8_t uart_close(uart_properties *uart);
 

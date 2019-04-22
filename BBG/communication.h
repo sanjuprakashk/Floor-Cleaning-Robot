@@ -3,6 +3,7 @@
 
 
 #include "uart.h"
+#include "logger.h"
 
 char lux[10];
 char distance[10];
