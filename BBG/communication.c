@@ -36,6 +36,7 @@ void *communication_thread_callback()
 	printf("Open success? %d\n", isOpen1);
 
 	char test = '1';
+	char test1 = '2';
 	if (isOpen1 == 0) {
 		unsigned char receive[30];
 		while(1)
@@ -65,6 +66,10 @@ void *communication_thread_callback()
 				if(comm_rec.distance < 10)
 				{
 					uart_send(uart1, &test, sizeof(char));
+				}
+				if(comm_rec.lux < 10)
+				{
+					uart_send(uart1, &test1, sizeof(char));
 				}
 			}
 

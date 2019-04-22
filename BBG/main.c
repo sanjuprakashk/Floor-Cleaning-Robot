@@ -24,8 +24,8 @@ int main()
 
 	printf("Threads created successfully\n");
 
-	pthread_join(remote_request_thread);
-	pthread_join(communication_thread);
+	pthread_join(remote_request_thread,NULL);
+	pthread_join(communication_thread,NULL);
 
 	return 0;
 }

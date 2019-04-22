@@ -15,7 +15,7 @@
 
 #include "communication.h"
 
-#define PORT_NO 8003
+#define PORT_NO 8005
 
 pthread_t remote_request_thread;
 /**********************************************
