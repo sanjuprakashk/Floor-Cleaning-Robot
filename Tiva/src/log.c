@@ -50,27 +50,27 @@ void LogTask(void *pvParameters)
 
     for(;;)
     {
-        if(xQueueReceive(myQueue_light, &lux_recv, TIMEOUT_TICKS ) == pdTRUE )
-        {
-
-            tx.lux = lux_recv;
-            sprintf(buffer, "%f",tx.lux);
-            //UARTprintf("Lux %s\n",buffer);
-
-
-
-//                UARTprintf("size %d\n",sizeof(tx));
-
-                //UART_send(ptr, sizeof(tx));
-
-
-        }
+//        if(xQueueReceive(myQueue_light, &lux_recv, TIMEOUT_TICKS ) == pdTRUE )
+//        {
+//
+//            tx.lux = lux_recv;
+//            sprintf(buffer, "%f",tx.lux);
+//            //UARTprintf("Lux %s\n",buffer);
+//
+//
+//
+////                UARTprintf("size %d\n",sizeof(tx));
+//
+//                //UART_send(ptr, sizeof(tx));
+//
+//
+//        }
 
         if(xQueueReceive(myQueue_ultra, &distance_recv, TIMEOUT_TICKS ) == pdTRUE )
         {
             tx.distance = distance_recv;
             sprintf(buffer, "%f",tx.distance);
-           // UARTprintf("Dis %s\n",buffer);
+            UARTprintf("Dis %s\n",buffer);
             UART_send(ptr, sizeof(tx));
         }
 

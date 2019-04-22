@@ -39,6 +39,7 @@
 #include "interrupt.h"
 #include "rom.h"
 #include "driverlib/fpu.h"
+#include "motor_driver.h"
 
 /**********************************************
  *        Function Prototypes
@@ -58,7 +59,10 @@ void ConfigureUART1();
  ********************************************/
 void vTimerCallback_LED_handler( TimerHandle_t  *pxTimer );
 
-void ActuatorTask(void *pvParameters);
+void Actuator_motor(void *pvParameters);
+void ReadUartTask(void *pvParameters);
+void Actuator_hot_h2o(void *pvParameters);
+void Actuator_night(void *pvParameters);
 
 /**********************************************
  *        Globals
@@ -69,7 +73,7 @@ struct log_struct_led log_led;
 uint32_t output_clock_rate_hz;
 
 //For temperature notification
-TaskHandle_t handle;
+TaskHandle_t handle_hot_h2o,handle_motor,handle_night;
 
 
 /**********************************************
@@ -113,35 +117,6 @@ int main(void)
     ConfigureUART1();
     ConfigureUART2();
 
-//    IntEnable(INT_UART1);
-    //ROM_UARTIntEnable(UART1_BASE, UART_INT_RX | UART_INT_RT);
-    //IntEnable(INT_UART1);
-
-
-//
-//    unsigned char *ptr;
-//    ptr = (uint8_t *) (&tx);
-//
-//    UARTprintf("size %d\n",sizeof(tx));
-//    for(;;)
-//    {
-//        UART_send(ptr, sizeof(tx));
-//
-//        //UARTprintf("sent\n");
-//    }
-
-//        while(UARTCharsAvail(UART1_BASE))
-//            {
-//               char c = ROM_UARTCharGet(UART1_BASE);
-//                UARTprintf("%c", c);
-//            }
-
-
-        //UARTprintf("%s", buf);
-
-
-
-//
 
     // Create light task
    xTaskCreate(LightTask, (const portCHAR *)"Light",
@@ -157,8 +132,17 @@ int main(void)
                        configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
     // Create temp task
-       xTaskCreate(ActuatorTask, (const portCHAR *)"Actuator",
+       xTaskCreate(ReadUartTask, (const portCHAR *)"UART",
                           configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+
+       xTaskCreate(Actuator_motor, (const portCHAR *)"motion",
+                                 configMINIMAL_STACK_SIZE, NULL, 1, &handle_motor);
+
+       //xTaskCreate(Actuator_night, (const portCHAR *)"auto-on",
+             //                           configMINIMAL_STACK_SIZE, NULL, 1, &handle_night);
+
+      // xTaskCreate(Actuator_hot_h2o, (const portCHAR *)"hot_water",
+                                     //          configMINIMAL_STACK_SIZE, NULL, 1, &handle_hot_h2o);
 
 
     /*start the schedule*/
@@ -168,19 +152,94 @@ int main(void)
 
 }
 
-void ActuatorTask(void *pvParameters)
+void ReadUartTask(void *pvParameters)
 {
     for(;;)
         {
             while(UARTCharsAvail(UART1_BASE))
             {
                 char c = ROM_UARTCharGet(UART1_BASE);
-                UARTprintf("Object detected %c\n", c);
+                if(c == '1')
+                {
+                   // UARTprintf("Object detected %c\n", c);
+                    xTaskNotifyGive(handle_motor);
+                }
+//                if(c == '2')
+//                {
+//                    UARTprintf("night time %c\n", c);
+//                    xTaskNotifyGive(handle_night);
+//                }
+//                if(c == '3')
+//                {
+//                    UARTprintf("Water heated %c\n", c);
+//                    xTaskNotifyGive(handle_hot_h2o);
+//                }
+
             }
     }
 
 }
 
+
+void Actuator_night(void *pvParameters)
+{
+        uint32_t ulNotifiedValue = 0;
+
+        ulNotifiedValue  = ulTaskNotifyTake( pdTRUE, 1000  );
+        if(ulNotifiedValue > 0)
+        {
+            UARTprintf("on the robot\n");
+        }
+
+}
+
+void Actuator_motor(void *pvParameters)
+{
+        init_motor();
+
+        for(;;)
+        {
+            uint32_t ulNotifiedValue = 0;
+
+            ulNotifiedValue  = ulTaskNotifyTake( pdTRUE, 1  );
+            if(ulNotifiedValue > 0)
+            {
+                UARTprintf("Object detected notified\n");
+                //object detected
+                GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_0, 0);
+                GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_1, 0);
+
+                GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_2, 0);
+                GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_3, 0);
+
+
+               // vTaskDelay(10000/portTICK_PERIOD_MS);
+                //normal run of motors
+                GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_0, GPIO_PIN_0);
+                GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_1, 0);
+
+                GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_2, GPIO_PIN_2);
+                GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_3, 0);
+            }
+
+
+
+
+
+        }
+}
+
+void Actuator_hot_h2o(void *pvParameters)
+{
+    uint32_t ulNotifiedValue = 0;
+
+            ulNotifiedValue  = ulTaskNotifyTake( pdTRUE, 1000  );
+            if(ulNotifiedValue > 0)
+            {
+                UARTprintf("Ready to clean\n");
+            }
+
+}
 /*  ASSERT() Error function
  *
  *  failed ASSERTS() from driverlib/debug.h are executed in this function
