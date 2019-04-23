@@ -39,7 +39,7 @@ void vTimerCallback_handler( TimerHandle_t  *pxTimer );
 #define DETECT_TIME_PERIOD_MS (1000)
 #define BUFFER (50)
 extern uint32_t output_clock_rate_hz;
-extern QueueHandle_t myQueue_ultra;
+extern QueueHandle_t myQueue_ultra, myQueue_light, myQueue_log;
 
 /********************************************
  * Func name :   vTimerCallback_Temp_handler

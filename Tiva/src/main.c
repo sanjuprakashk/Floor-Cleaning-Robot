@@ -67,7 +67,7 @@ void Actuator_night(void *pvParameters);
 /**********************************************
  *        Globals
  **********************************************/
-QueueHandle_t myQueue_ultra, myQueue_light;
+QueueHandle_t myQueue_ultra, myQueue_light, myQueue_log;
 
 struct log_struct_led log_led;
 uint32_t output_clock_rate_hz;
@@ -95,6 +95,7 @@ TaskHandle_t handle;
 
 int main(void)
 {
+
     // Initialize system clock to 120 MHz
     output_clock_rate_hz = ROM_SysCtlClockFreqSet(
                                (SYSCTL_XTAL_25MHZ | SYSCTL_OSC_MAIN |
@@ -120,11 +121,11 @@ int main(void)
 
     // Create light task
    xTaskCreate(LightTask, (const portCHAR *)"Light",
-               configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+              configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
     // Create logger task
     xTaskCreate(LogTask, (const portCHAR *)"Log",
-                    configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+                   configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
 
     // Create temp task
@@ -137,6 +138,9 @@ int main(void)
 
        xTaskCreate(Actuator_motor, (const portCHAR *)"motion",
                                  configMINIMAL_STACK_SIZE, NULL, 1, &handle_motor);
+
+      // xTaskCreate(Control_Node_heartbeat, (const portCHAR *)"motion",
+               //                        configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
        //xTaskCreate(Actuator_night, (const portCHAR *)"auto-on",
              //                           configMINIMAL_STACK_SIZE, NULL, 1, &handle_night);
@@ -213,7 +217,7 @@ void Actuator_motor(void *pvParameters)
                 GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_3, 0);
 
 
-               // vTaskDelay(10000/portTICK_PERIOD_MS);
+                // vTaskDelay(10000/portTICK_PERIOD_MS);
                 //normal run of motors
                 GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_0, GPIO_PIN_0);
                 GPIOPinWrite(GPIO_PORTE_BASE, GPIO_PIN_1, 0);

@@ -2,7 +2,7 @@
  * main.h
  *
  *  Created on: Mar 28, 2015
- *      Author: akobyljanec
+ *      Author: Steve
  */
 
 #ifndef MAIN_H_

@@ -137,10 +137,12 @@ void UtrasonicTask(void *pvParameters)
                      distance_send = (((float)(1.0/(output_clock_rate_hz/1000000))*time)/58);
 //                     char buf_ult[BUFFER];
 //                     sprintf(buf_ult,"%f",(((float)(1.0/(output_clock_rate_hz/1000000))*time)/58));
-//                 //  UARTprintf("Distance [%s]\n",buf_ult);
+//                   UARTprintf("Distance [%s]\n",buf_ult);
 //                     UART_send(ptr, sizeof(tx));
                      xQueueSendToBack( myQueue_ultra,( void * ) &distance_send, QUEUE_TIMEOUT_TICKS ) ;
-
+                     char b[30];
+                     sprintf(b,"D %f\n",distance_send);
+                     xQueueSendToBack( myQueue_log,( void * ) b, QUEUE_TIMEOUT_TICKS ) ;
                  }
                  FLAG_UL = pdFALSE;
 

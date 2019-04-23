@@ -66,16 +66,17 @@ void LightTask(void *pvParameters)
 
                 if(FLAG_Light == pdTRUE)
                 {
-
+                    FLAG_Light = pdFALSE;
                     read_lux_CH0();
                     read_lux_CH1();
 
-                          lux_send = lux_measurement(CH0,CH1);
-//                        char buffer_lux[BUFFER];
-//                        sprintf(buffer_lux,"%f",tx.lux);
-////                      UARTprintf("Lux [%s]\n",buffer_lux);
+                    lux_send = lux_measurement(CH0,CH1);
+                    xQueueSendToBack( myQueue_light,( void * ) &lux_send, QUEUE_TIMEOUT_TICKS ) ;
 
-                        xQueueSendToBack( myQueue_light,( void * ) &lux_send, QUEUE_TIMEOUT_TICKS ) ;
+                    char b[30];
+                    sprintf(b,"L %f\n",lux_send);
+                    xQueueSendToBack( myQueue_log,( void * ) b, QUEUE_TIMEOUT_TICKS ) ;
+
 
                 }
             }
