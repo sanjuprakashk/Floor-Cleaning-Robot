@@ -33,7 +33,7 @@ int8_t uart_config(uart_properties *uart)
 	uart_port.c_lflag &= ~(ECHO | ECHONL | ICANON | IEXTEN | ISIG);
 
 	uart_port.c_cc[VTIME] = 0;
-	uart_port.c_cc[VMIN]  = 100;
+	uart_port.c_cc[VMIN]  = 1;
 
 	fcntl(uart->fd, F_SETFL, O_NONBLOCK);
 
@@ -65,8 +65,8 @@ int8_t uart_send(uart_properties *uart, void *tx, int length) {
 		return -1;
 	}
 	
-	/*printf("Size of write = %d\n", count);
-	struct sensor_struct *tx_r = tx;
+	printf("Size of write = %d\n", count);
+	/*struct sensor_struct *tx_r = tx;
 	printf("Wrote %s %d %f to uart %i\n",tx_r->task_name, tx_r->timeStamp, tx_r->sensor_data, uart->uart_no);
 	*/
 	return 0;
@@ -125,13 +125,16 @@ int8_t uart_receive_task(uart_properties *uart, void *rx_r, int length) {
 
 	FILE *fp = fopen("test.txt","a");
 	int count = 0;
-	count = read(uart->fd,(char *) rx_r, 1);
+//	printf("TEST CHAR =%c\n",rx_r);
+	count = read(uart->fd, (char *)rx_r, 2);
 
 	if(count == -1)
 		return -1;
-	fprintf(fp,"%c",(char *)rx_r);
+	//printf("READ COUNT = %d\n", count);
+	//printf("%s",rx_r);
+	fprintf(fp,"%s",(char *)rx_r);
 
-	fclose(fp);
+	fflush(fp);
 
 	
 //	memset(task_name,'\0',sizeof(task_name));	
