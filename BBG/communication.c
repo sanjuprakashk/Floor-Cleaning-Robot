@@ -89,7 +89,7 @@ void *communication_thread_callback()
 					*/
 				}
 
-				if(uart_receive(uart1,&logger,sizeof(logger_struct)) > 0)
+				if(uart_receive_task(uart1,&logger,sizeof(logger_struct)) > 0)
 				{
 					printf("UART1\n");
 				}

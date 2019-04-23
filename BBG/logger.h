@@ -2,7 +2,7 @@
 #define LOGGER_H
 
 
-struct sensor_struct
+typedef struct sensor_struct
 {
     char task_name[5];
     uint32_t timeStamp;
@@ -11,7 +11,7 @@ struct sensor_struct
 
 }sensor_struct;
 
-struct logger_struct
+typedef struct logger_struct
 {
 	char task_name[5];
 	uint32_t timeStamp;

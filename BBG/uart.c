@@ -73,7 +73,7 @@ int8_t uart_send(uart_properties *uart, void *tx, int length) {
 }
 
 
-int8_t uart_receive(uart_properties *uart,void  *rx_r, int length) {
+int8_t uart_receive(uart_properties *uart,sensor_struct *rx_r, int length) {
 	int count = 0;
 	count = read(uart->fd, rx_r, length);
 	if (count  == -1) {
@@ -83,7 +83,7 @@ int8_t uart_receive(uart_properties *uart,void  *rx_r, int length) {
 
 	printf("Size of read = %d \t\t Size of length = %d\n", count, length);
 	
-	struct logger_struct *rx_log = rx_r;
+	struct sensor_struct *rx_log = rx_r;
 	printf("TASK NAME = %s\n", rx_log->task_name);
 
 	if(strcmp(rx_log->task_name,"LUX") == 0)
@@ -106,11 +106,11 @@ int8_t uart_receive(uart_properties *uart,void  *rx_r, int length) {
 		printf("[%d] WATER LEVEL = %f\n",rx->timeStamp, rx->sensor_data);
 	}
 
-	else if(strcmp(rx_log->task_name,"LOG") == 0)
+	/*else if(strcmp(rx_log->task_name,"LOG") == 0)
 	{
 		struct logger_struct *rx_log1 = rx_r;
 		printf("[%d] LOG MESSAGE = %s\n", rx_log1->timeStamp, rx_log1->log);
-	}
+	}*/
 
 	//printf("Read %s %d %f from uart %i\n", rx->task_name, rx->timeStamp,rx->sensor_data, uart->uart_no);
 	return count;
@@ -121,9 +121,11 @@ int8_t uart_close(uart_properties *uart) {
 	return 0;
 }
 
-int8_t *uart_receive_task(uart_properties *uart, void *rx_r, int length) {
+int8_t uart_receive_task(uart_properties *uart, logger_struct *rx_r, int length) {
 	int count = 0;
 	count = read(uart->fd, rx_r, length);
+
+	printf("[%d] LOG MESSAGE = %s\n", rx_r->timeStamp, rx_r->log);
 	
 //	memset(task_name,'\0',sizeof(task_name));	
 //	strcpy(task_name, rx_r);
