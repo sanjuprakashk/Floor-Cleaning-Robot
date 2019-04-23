@@ -10,7 +10,7 @@ void *logger_thread_callback()
 	uart1->baudrate = B115200;
 
 	uint8_t isOpen1 = uart_config(uart1);
-
+	
 	char log[10] = {0};
 	char b = 's';
 	

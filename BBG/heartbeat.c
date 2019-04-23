@@ -8,12 +8,17 @@ void *heartbeat_thread_callback()
 	uart2->baudrate = B115200;
 
 	uint8_t isOpen2 = uart_config(uart2);
-	
+	int8_t success;
 	char hb ='h';
 	while(1)
 	{
 		usleep(1000000);
-		if(uart_send(uart2,&hb,sizeof(char)) > 0)
+
+		pthread_mutex_lock(&lock_res);
+		success = uart_send(uart2,&hb,sizeof(char));
+		pthread_mutex_unlock(&lock_res);
+
+		if(success > 0)
 		{
 			printf("HEARTBEAT SENT\n");
 		}
