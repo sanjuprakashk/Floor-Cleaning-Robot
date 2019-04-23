@@ -126,7 +126,7 @@ int8_t uart_receive_task(uart_properties *uart, void *rx_r, int length) {
 	FILE *fp = fopen("test.txt","a");
 	int count = 0;
 //	printf("TEST CHAR =%c\n",rx_r);
-	count = read(uart->fd, (char *)rx_r, 2);
+	count = read(uart->fd, (char *)rx_r, length);
 
 	if(count == -1)
 		return -1;
