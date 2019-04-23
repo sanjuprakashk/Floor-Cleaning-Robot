@@ -30,9 +30,11 @@ typedef struct {
 
 int8_t uart_send(uart_properties *uart, void *tx, int length);
 
-int8_t uart_receive(uart_properties *uart, void *rx, int length);
+int8_t uart_receive(uart_properties *uart, void *rx_r, int length);
 
 int8_t uart_close(uart_properties *uart);
 
 int8_t uart_config(uart_properties *uart);
+
+int8_t *uart_receive_task(uart_properties *uart, void *rx_r, int length);
 #endif

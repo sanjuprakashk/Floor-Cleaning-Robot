@@ -12,11 +12,11 @@ int main()
 	pthread_attr_t attr;
 	pthread_attr_init(&attr); 
 
-	if(pthread_create(&remote_request_thread, &attr, remote_request_callback, NULL) != 0)
+/*	if(pthread_create(&remote_request_thread, &attr, remote_request_callback, NULL) != 0)
 	{
 		perror("Remote socket thread creation failed");
 	}
-
+*/
 	if(pthread_create(&communication_thread, &attr, communication_thread_callback, NULL) != 0)
 	{
 		perror("Communication thread creation failed");

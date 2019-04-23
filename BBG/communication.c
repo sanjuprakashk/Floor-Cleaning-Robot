@@ -24,6 +24,8 @@ void *communication_thread_callback()
 
 	struct sensor_struct sensor;
 
+	struct logger_struct logger;
+
 	uart_properties *uart1  = malloc(sizeof(uart_properties));
 	uart1->uart_no = 1;
 	uart1->baudrate = B115200;
@@ -39,6 +41,7 @@ void *communication_thread_callback()
 
 	char test = '1';
 	char test1 = '2';
+	char task[15];
 	if (isOpen1 == 0) {
 		unsigned char receive[30];
 		while(1)
@@ -47,7 +50,7 @@ void *communication_thread_callback()
 			char buf[30];
 			// sprintf(buf, "foo %d", ++i);
 
-			strcpy(sensor.task_name,"LUX");
+		/*	strcpy(sensor.task_name,"LUX");
 			sensor.timeStamp = 100;
 			sensor.sensor_data = 9999;
 
@@ -57,28 +60,42 @@ void *communication_thread_callback()
 				return -1;
 			}
 
-
-			usleep(10000);
+*/
+//			usleep(1000);
 
 
 			memset(&comm,0,sizeof(comm));
 			//comm	
 			//comm.sensor_data = 0;
 			// comm_rec.distance = 0;
-			if(uart_receive(uart1,&comm, sizeof(logger_struct)) > 0)
+		/*	if(uart_receive_task(uart4, &task, sizeof(task)) > 0)
 			{
-				/*printf("\n\n Distance = %f\n\n",comm.sensor);//, comm_rec.distance);
-				if(comm.sensor < 10)
+				usleep(10000);
+				if(strcmp(task_name,"LUX"))
 				{
-					uart_send(uart1, &test, sizeof(char));
-				}
-				if(comm.sesnor < 10)
-				{
-					uart_send(uart1, &test1, sizeof(char));
-				}*/
-			}
 
-			strcpy(sensor.task_name,"DIST");
+				}*/
+				if(uart_receive(uart4,&sensor, sizeof(sensor_struct)) > 0)
+				{
+					//printf("\n\n Distance = %f\n\n",comm.sensor);//, comm_rec.distance);
+				/*	if((strcmp(logger.task_name,"DIST") == 0) && logger.sensor_data < 10)
+					{
+						uart_send(uart1, &test, sizeof(char));
+					}
+					if((strcmp(logger.task_name,"LUX") == 0) && logger.sensor_data < 10)
+					{
+						uart_send(uart1, &test1, sizeof(char));
+					}
+					*/
+				}
+
+				if(uart_receive(uart1,&logger,sizeof(logger_struct)) > 0)
+				{
+					printf("UART1\n");
+				}
+			//}
+
+		/*	strcpy(sensor.task_name,"DIST");
 			sensor.timeStamp = 1001;
 			sensor.sensor_data = 10.0;
 
@@ -96,6 +113,7 @@ void *communication_thread_callback()
 			usleep(10000);
 			
 			uart_receive(uart1, &comm, sizeof(logger_struct));
+			*/
 		}
 		uart_close(uart1);
 		uart_close(uart4);
