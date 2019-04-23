@@ -18,7 +18,6 @@
 #include "portmacro.h"
 #include "time.h"
 #include "temp.h"
-
 /**********************************************
  *        MACRO
  **********************************************/
@@ -29,7 +28,7 @@
 /**********************************************
  *        Global declarations
  **********************************************/
-extern QueueHandle_t myQueue_light, myQueue_ultra;
+extern QueueHandle_t myQueue_light, myQueue_ultra, myQueue_log;
 
 /**********************************************
  *        Function Prototypes
@@ -49,5 +48,5 @@ void queue_init();
 void LogTask(void *pvParameters);
 
 void UART_send(char* ptr, int len);
-
+void UART_send1(char* ptr, int len);
 #endif /* LOG_H_ */
