@@ -4,7 +4,7 @@
 
 struct sensor_struct
 {
-    char task_name[6];
+    char task_name[15];
     uint32_t timeStamp;
 
     float sensor_data;
@@ -13,7 +13,7 @@ struct sensor_struct
 
 struct logger_struct
 {
-	char task_name[6];
+	char task_name[15];
 	uint32_t timeStamp;
 
 	char log[100];

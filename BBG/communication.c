@@ -47,23 +47,25 @@ void *communication_thread_callback()
 			char buf[30];
 			// sprintf(buf, "foo %d", ++i);
 
-			strcpy(sensor.task_name,"SENSO");
-			sensor.timeStamp = 10000;
-			sensor.sensor_data = 100.00;
+			strcpy(sensor.task_name,"LUX");
+			sensor.timeStamp = 100;
+			sensor.sensor_data = 9999;
 
 			// Send data to uart1
-			if (uart_send(uart1, (void *)&sensor, sizeof(sensor_struct)) < 0) {
+			if (uart_send(uart1, &sensor, sizeof(sensor_struct)) < 0) {
 				printf("Could not send data to uart port");
 				return -1;
 			}
 
 
-			usleep(1000000);
+			usleep(10000);
 
 
-			comm.sensor_data = 0;
+			memset(&comm,0,sizeof(comm));
+			//comm	
+			//comm.sensor_data = 0;
 			// comm_rec.distance = 0;
-			if(uart_receive(uart4,&comm, sizeof(logger_struct)) > 0)
+			if(uart_receive(uart1,&comm, sizeof(logger_struct)) > 0)
 			{
 				/*printf("\n\n Distance = %f\n\n",comm.sensor);//, comm_rec.distance);
 				if(comm.sensor < 10)
@@ -76,6 +78,24 @@ void *communication_thread_callback()
 				}*/
 			}
 
+			strcpy(sensor.task_name,"DIST");
+			sensor.timeStamp = 1001;
+			sensor.sensor_data = 10.0;
+
+			uart_send(uart1, &sensor, sizeof(sensor_struct));
+			usleep(10000);
+
+			uart_receive(uart1, &comm, sizeof(logger_struct));
+			
+			strcpy(sensor.task_name, "WATER");
+			sensor.timeStamp = 1002;
+			sensor.sensor_data = 101.1;
+
+			uart_send(uart1, &sensor, sizeof(sensor_struct));
+
+			usleep(10000);
+			
+			uart_receive(uart1, &comm, sizeof(logger_struct));
 		}
 		uart_close(uart1);
 		uart_close(uart4);
