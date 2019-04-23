@@ -73,7 +73,7 @@ int8_t uart_send(uart_properties *uart, void *tx, int length) {
 }
 
 
-int8_t uart_receive(uart_properties *uart,sensor_struct *rx_r, int length) {
+int8_t uart_receive(uart_properties *uart, void *rx_r, int length) {
 	int count = 0;
 	count = read(uart->fd, rx_r, length);
 	if (count  == -1) {
@@ -121,11 +121,17 @@ int8_t uart_close(uart_properties *uart) {
 	return 0;
 }
 
-int8_t uart_receive_task(uart_properties *uart, logger_struct *rx_r, int length) {
+int8_t uart_receive_task(uart_properties *uart, void *rx_r, int length) {
 	int count = 0;
-	count = read(uart->fd, rx_r, length);
+	count = read(uart->fd,(char *) rx_r, 1);
 
-	printf("[%d] LOG MESSAGE = %s\n", rx_r->timeStamp, rx_r->log);
+	if(count == -1)
+		return -1;
+	struct logger_struct *rx = rx_r;
+
+
+	
+	printf("[%d] LOG MESSAGE = %s\n", rx->timeStamp, rx->log);
 	
 //	memset(task_name,'\0',sizeof(task_name));	
 //	strcpy(task_name, rx_r);

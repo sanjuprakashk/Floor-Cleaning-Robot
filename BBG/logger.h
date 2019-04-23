@@ -16,7 +16,7 @@ typedef struct logger_struct
 	char task_name[5];
 	uint32_t timeStamp;
 
-	char log[10];
+	char log[100];
 }logger_struct;
 
 char task_name[15];
