@@ -26,23 +26,18 @@ void *communication_thread_callback()
 
 	struct logger_struct logger;
 
-	uart_properties *uart1  = malloc(sizeof(uart_properties));
-	uart1->uart_no = 1;
-	uart1->baudrate = B115200;
-
 	uart_properties *uart4 = malloc(sizeof(uart_properties));
 	uart4->uart_no = 4;
 	uart4->baudrate = B115200;
 
-	uint8_t isOpen1 = uart_config(uart1);
 	uint8_t isOpen4 = uart_config(uart4);
 	int i = 0;
-	printf("Open success? %d\n", isOpen1);
+	printf("Open success? %d\n", isOpen4);
 
 	char test = '1';
 	char test1 = '2';
 	char task[15];
-	if (isOpen1 == 0) {
+	if (isOpen4 == 0) {
 		unsigned char receive[30];
 		while(1)
 		{
@@ -89,10 +84,6 @@ void *communication_thread_callback()
 					*/
 				}
 
-				if(uart_receive_task(uart1,&logger,sizeof(logger_struct)) > 0)
-				{
-					printf("UART1\n");
-				}
 			//}
 
 		/*	strcpy(sensor.task_name,"DIST");
@@ -115,7 +106,6 @@ void *communication_thread_callback()
 			uart_receive(uart1, &comm, sizeof(logger_struct));
 			*/
 		}
-		uart_close(uart1);
 		uart_close(uart4);
 	}
 	printf("EOF\n");

@@ -122,16 +122,17 @@ int8_t uart_close(uart_properties *uart) {
 }
 
 int8_t uart_receive_task(uart_properties *uart, void *rx_r, int length) {
+
+	FILE *fp = fopen("test.txt","a");
 	int count = 0;
 	count = read(uart->fd,(char *) rx_r, 1);
 
 	if(count == -1)
 		return -1;
-	struct logger_struct *rx = rx_r;
+	fprintf(fp,"%c",(char *)rx_r);
 
+	fclose(fp);
 
-	
-	printf("[%d] LOG MESSAGE = %s\n", rx->timeStamp, rx->log);
 	
 //	memset(task_name,'\0',sizeof(task_name));	
 //	strcpy(task_name, rx_r);

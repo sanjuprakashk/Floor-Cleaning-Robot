@@ -1,7 +1,7 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-
+#include "uart.h"
 typedef struct sensor_struct
 {
     char task_name[5];
@@ -19,7 +19,9 @@ typedef struct logger_struct
 	char log[100];
 }logger_struct;
 
-char task_name[15];
+pthread_t logger_thread;
+ 
+void *logger_thread_callback();
 #endif
 
 

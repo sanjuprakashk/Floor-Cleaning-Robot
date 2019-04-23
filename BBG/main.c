@@ -5,7 +5,7 @@
 
 #include "server.h"
 #include "communication.h"
-
+#include "logger.h"
 
 int main()
 {
@@ -22,10 +22,17 @@ int main()
 		perror("Communication thread creation failed");
 	}
 
+	if(pthread_create(&logger_thread, &attr, logger_thread_callback, NULL) != 0)
+	{
+		perror("Communication thread creation failed");
+	}
+
 	printf("Threads created successfully\n");
 
-	pthread_join(remote_request_thread,NULL);
+	
 	pthread_join(communication_thread,NULL);
+	pthread_join(logger_thread,NULL);
+	pthread_join(remote_request_thread,NULL);
 
 	return 0;
 }

@@ -1,12 +1,28 @@
-struct sensor_struct
+#include "logger.h"
+
+
+
+void *logger_thread_callback()
 {
-    char task_name[6];
-    uint32_t ulTimeStamp;
+	uart_properties *uart1  = malloc(sizeof(uart_properties));
+	uart1->uart_no = 1;
+	uart1->baudrate = B115200;
 
-    float distance;
-    float lux;
-    float waterLevel;
+	uint8_t isOpen1 = uart_config(uart1);
 
-}sensor_struct;
+	char a;
+	
+	while(1)
+	{
+		if(uart_receive_task(uart1,&a,sizeof(char)) > 0)
+		{
+			printf("UART1\n");
+		}
+	}
+	uart_close(uart1);
+		
+
+
+}
 
 
