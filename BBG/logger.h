@@ -20,6 +20,8 @@ typedef struct logger_struct
 }logger_struct;
 
 pthread_t logger_thread;
+
+extern pthread_mutex_t lock_res;
  
 void *logger_thread_callback();
 #endif

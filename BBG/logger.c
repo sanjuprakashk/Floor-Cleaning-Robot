@@ -10,8 +10,8 @@ void *logger_thread_callback()
 	uart1->baudrate = B115200;
 
 	uint8_t isOpen1 = uart_config(uart1);
-
-	char a =' ';
+	
+	char log[10] = {0};
 	char b = 's';
 	
 	while(1)
@@ -19,7 +19,7 @@ void *logger_thread_callback()
 		//uart_send(uart1,&b,sizeof(char));
 
 		usleep(100000);
-		if(uart_receive_task(uart1,&a,sizeof(char)) > 0)
+		if(uart_receive_task(uart1,log,sizeof(log)) > 0)
 		{
 		//	printf("UART1\n");
 		}
