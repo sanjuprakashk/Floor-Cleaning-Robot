@@ -3,6 +3,8 @@
 #include "uart.h"
 
 
+char temp[15];
+
 int8_t uart_config(uart_properties *uart)
 {
 	char path[15] = "/dev/ttyO";
@@ -81,29 +83,29 @@ int8_t uart_receive(uart_properties *uart, void *rx_r, int length) {
 		return -1;
 	}
 
-	printf("Size of read = %d \t\t Size of length = %d\n", count, length);
+//	printf("Size of read = %d \t\t Size of length = %d\n", count, length);
 	
 	struct sensor_struct *rx_log = rx_r;
-	printf("TASK NAME = %s\n", rx_log->task_name);
+//	printf("TASK NAME = %s\n", rx_log->task_name);
 
 	if(strcmp(rx_log->task_name,"LUX") == 0)
 	{
-		struct sensor_struct *rx = rx_r;
-		printf("[%d] LUX = %f\n",rx->timeStamp, rx->sensor_data);
+	//	struct sensor_struct *rx = rx_r;
+	//	printf("[%d] LUX = %f\n",rx->timeStamp, rx->sensor_data);
 		
 	}
 
 	else if(strcmp(rx_log->task_name,"DIST") == 0)
 	{
-		struct sensor_struct *rx = rx_r;
-		printf("[%d] DIST = %f\n",rx->timeStamp, rx->sensor_data);
+	//	struct sensor_struct *rx = rx_r;
+	//	printf("[%d] DIST = %f\n",rx->timeStamp, rx->sensor_data);
 
 	}
 	
 	else if(strcmp(rx_log->task_name,"WATER") == 0)
 	{
-		struct sensor_struct *rx = rx_r;
-		printf("[%d] WATER LEVEL = %f\n",rx->timeStamp, rx->sensor_data);
+	//	struct sensor_struct *rx = rx_r;
+	//	printf("[%d] WATER LEVEL = %f\n",rx->timeStamp, rx->sensor_data);
 	}
 
 	/*else if(strcmp(rx_log->task_name,"LOG") == 0)
@@ -126,16 +128,19 @@ int8_t uart_receive_task(uart_properties *uart, void *rx_r, int length) {
 	FILE *fp = fopen("test.txt","a");
 	int count = 0;
 //	printf("TEST CHAR =%c\n",rx_r);
-	count = read(uart->fd, (char *)rx_r, length);
-
+	count = read(uart->fd, rx_r, length);
+	
 	if(count == -1)
 		return -1;
-	//printf("READ COUNT = %d\n", count);
-	//printf("%s",rx_r);
-	fprintf(fp,"%s",(char *)rx_r);
 
-	fflush(fp);
-
+	memset(temp,'\0', sizeof(temp));
+	strcpy(temp,rx_r);
+	printf("%s",temp);
+	fprintf(fp,"%s",rx_r);
+	
+//	fflush(fp);
+	
+	fclose(fp);
 	
 //	memset(task_name,'\0',sizeof(task_name));	
 //	strcpy(task_name, rx_r);

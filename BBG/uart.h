@@ -17,7 +17,7 @@ typedef struct {
 } communication;
 
 typedef enum {
-	uart0 = 0, uart1 = 1, uart2 = 2, uart3 = 3, uart4 = 4, uart5 = 5
+	uart0 = 0, uart1 = 1, uart20 = 2, uart3 = 3, uart4 = 4, uart5 = 5
 } uart;
 
 
@@ -27,6 +27,7 @@ typedef struct {
 	int baudrate;
 }uart_properties;
 
+uart_properties  *uart2;
 
 int8_t uart_send(uart_properties *uart, void *tx, int length);
 

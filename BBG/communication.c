@@ -70,18 +70,19 @@ void *communication_thread_callback()
 				{
 
 				}*/
+				usleep(10000);
 				if(uart_receive(uart4,&sensor, sizeof(sensor_struct)) > 0)
 				{
 					//printf("\n\n Distance = %f\n\n",comm.sensor);//, comm_rec.distance);
-				/*	if((strcmp(logger.task_name,"DIST") == 0) && logger.sensor_data < 10)
+					if((strcmp(sensor.task_name,"DIST") == 0) && sensor.sensor_data < 10)
 					{
-						uart_send(uart1, &test, sizeof(char));
+						uart_send(uart2, &test, sizeof(char));
 					}
-					if((strcmp(logger.task_name,"LUX") == 0) && logger.sensor_data < 10)
+					if((strcmp(sensor.task_name,"LUX") == 0) && sensor.sensor_data < 10)
 					{
-						uart_send(uart1, &test1, sizeof(char));
+						uart_send(uart2, &test1, sizeof(char));
 					}
-					*/
+					
 				}
 
 			//}

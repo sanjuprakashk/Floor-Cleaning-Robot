@@ -11,15 +11,16 @@ void *logger_thread_callback()
 
 	uint8_t isOpen1 = uart_config(uart1);
 	
-	char log[10] = {0};
-	char b = 's';
+	char log[15];
+	//char b = 's';
 	
 	while(1)
 	{
 		//uart_send(uart1,&b,sizeof(char));
 
-		usleep(100000);
-		if(uart_receive_task(uart1,log,sizeof(log)) > 0)
+		usleep(75000);
+		memset(log,'\0', sizeof(log));
+		if(uart_receive_task(uart1,&log,sizeof(log)) > 0)
 		{
 		//	printf("UART1\n");
 		}
