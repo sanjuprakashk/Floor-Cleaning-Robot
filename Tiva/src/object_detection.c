@@ -13,7 +13,7 @@
 
 uint32_t start, end;
 uint32_t FLAG_UL, conv_complete = 0;
-float time = 0;
+float time_pulse = 0;
 float distance_send;
 
 
@@ -81,7 +81,7 @@ void PortFIntHandler()
 
             end = TimerValueGet(TIMER2_BASE,TIMER_A);
             TimerDisable(TIMER2_BASE,TIMER_A);
-            time = end - start;
+            time_pulse = end - start;
             conv_complete = 1;
 
 
@@ -134,15 +134,12 @@ void UtrasonicTask(void *pvParameters)
 
                  if((conv_complete == 1))
                  {
-                     distance_send = (((float)(1.0/(output_clock_rate_hz/1000000))*time)/58);
-//                     char buf_ult[BUFFER];
-//                     sprintf(buf_ult,"%f",(((float)(1.0/(output_clock_rate_hz/1000000))*time)/58));
-//                   UARTprintf("Distance [%s]\n",buf_ult);
-//                     UART_send(ptr, sizeof(tx));
+                     distance_send = (((float)(1.0/(output_clock_rate_hz/1000000))*time_pulse)/58);
                      xQueueSendToBack( myQueue_ultra,( void * ) &distance_send, QUEUE_TIMEOUT_TICKS ) ;
-                     char b[30];
-                     sprintf(b,"D %f\n",distance_send);
-                     xQueueSendToBack( myQueue_log,( void * ) b, QUEUE_TIMEOUT_TICKS ) ;
+                     memset(buffer_log,'\0',BUFFER);
+                     sprintf(buffer_log,"D %f\n",distance_send);
+                     LOG_INFO(buffer_log)
+                     LOG_ERROR("Distance\n")
                  }
                  FLAG_UL = pdFALSE;
 

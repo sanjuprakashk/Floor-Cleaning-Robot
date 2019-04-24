@@ -30,6 +30,7 @@
 #include "utils/uartstdio.h"
 #include "driverlib/inc/hw_ints.h"
 #include "driverlib/fpu.h"
+#include "log.h"
 
 void init_ultrasonic_sensor();
 void PortFIntHandler();

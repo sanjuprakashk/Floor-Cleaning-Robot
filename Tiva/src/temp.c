@@ -73,9 +73,9 @@ void LightTask(void *pvParameters)
                     lux_send = lux_measurement(CH0,CH1);
                     xQueueSendToBack( myQueue_light,( void * ) &lux_send, QUEUE_TIMEOUT_TICKS ) ;
 
-                    char b[30];
-                    sprintf(b,"L %f\n",lux_send);
-                    xQueueSendToBack( myQueue_log,( void * ) b, QUEUE_TIMEOUT_TICKS ) ;
+                    memset(buffer_log,'\0',BUFFER);
+                     sprintf(buffer_log,"L %f\n",lux_send);
+                     LOG_INFO(buffer_log)
 
 
                 }

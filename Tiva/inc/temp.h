@@ -25,7 +25,6 @@
 #include "driverlib/inc/hw_memmap.h"
 #include "driverlib/pin_map.h"
 #include "driverlib/sysctl.h"
-
 #include "log.h"
 #include "i2c.h"
 

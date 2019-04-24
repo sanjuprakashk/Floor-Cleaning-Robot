@@ -10,7 +10,7 @@
 /**********************************************
  *        Global definitions
  **********************************************/
-char log_data_recv[30];
+char log_data_recv[100];
 typedef struct
 {
     char task[5];
@@ -22,23 +22,7 @@ typedef struct
 
 send_sensor_data tx_data;
 
-//typedef struct
-//{
-//    char task[5];
-//    uint32_t time_stamp;
-//    char log_data[100];
-//
-//}send_log_data;
-//
-//send_log_data tx_log;
 
-//struct communication
-//{
-//    float lux;
-//    float distance;
-//};
-//
-//struct communication tx;
 
 float lux_recv, distance_recv;
 
@@ -56,7 +40,7 @@ void queue_init()
         UARTprintf("error on queue creation myQueue_ultra\n");
     }
 
-    myQueue_log = xQueueCreate(QueueLength, 30);
+    myQueue_log = xQueueCreate(QueueLength, 100);
     if(myQueue_log == NULL)
     {
         UARTprintf("error on queue creation myQueue_ultra\n");
@@ -76,6 +60,13 @@ void LogTask(void *pvParameters)
     unsigned char *ptr1;
         ptr1 = (uint8_t *) (log_data_recv);
 
+//    FF_FILE *logger_fp;
+//    logger_fp = ff_fopen( "logger_local.txt", "a+" );
+//    if(logger_fp == NULL)
+//    {
+//        perror("error on creating local logger file\n");
+//    }
+
 
     for(;;)
     {
@@ -85,7 +76,6 @@ void LogTask(void *pvParameters)
             tx_data.sensor_value = lux_recv;
             tx_data.time_stamp = xTaskGetTickCount();
             sprintf(buffer, "%f",tx_data.sensor_value);
-            UARTprintf("Lux %s\n",buffer);
 
             UART_send(ptr, sizeof(tx_data));
 
@@ -97,7 +87,6 @@ void LogTask(void *pvParameters)
             tx_data.sensor_value = distance_recv;
             tx_data.time_stamp = xTaskGetTickCount();
             sprintf(buffer, "%f",tx_data.sensor_value);
-            UARTprintf("Dis %s\n",buffer);
             UART_send(ptr, sizeof(tx_data));
 
         }
@@ -105,15 +94,16 @@ void LogTask(void *pvParameters)
         memset(log_data_recv,'\0',sizeof(log_data_recv));
         if(xQueueReceive(myQueue_log, log_data_recv, TIMEOUT_TICKS ) == pdTRUE )
         {
-//            memset(tx_log.task,'\0',sizeof(tx_log.task));
-//            strcpy(tx_log.task,"LOG");
-//            memset(tx_log.log_data,'\0',sizeof(tx_log.log_data));
-//            strcpy(tx_log.log_data,log_data_recv);
 
-//            tx_log.time_stamp = xTaskGetTickCount();
-
-            UARTprintf("-- Log  %s\n",log_data_recv);
-            UART_send1(ptr1, strlen(log_data_recv));
+            UARTprintf("--> Log  %s\n",log_data_recv);
+            if(CN_ACTIVE == pdTRUE)
+            {
+                UART_send_log(ptr1, sizeof(log_data_recv)+5);
+            }
+            else
+            {
+               // ff_fwrite( log_data_recv, 1, strlen(log_data_recv), logger_fp );
+            }
 
         }
     }
@@ -131,12 +121,13 @@ void UART_send(char* ptr, int len)
 }
 
 
-void UART_send1(char* ptr, int len)
+void UART_send_log(char* ptr, int len)
 {
     while(len != 0)
     {
-        UARTCharPut(UART1_BASE, *ptr);
+        UARTCharPut(UART3_BASE, *ptr);
         ptr++;
         len--;
     }
 }
+
