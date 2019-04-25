@@ -13,7 +13,7 @@ class mywindow(QtWidgets.QDialog):
         super(mywindow, self).__init__() #initiating the parent class
         self.ui = Ui_Dialog() 
         self.ui.setupUi(self) #calling the function generated in the .ui
-        #self.establish_socket(self)
+        self.establish_socket(self)
 
         self.ui.Auto.clicked.connect(self.Auto_mode) 
 
@@ -46,31 +46,31 @@ class mywindow(QtWidgets.QDialog):
 
     def Auto_mode(self):
         print("Auto mode\n")
-        # s.sendall(b'auto')
+        s.sendall(b'auto')
 
     def Manual_mode(self):
         print("Manual_mode\n")
-        # s.sendall(b'manual')
+        s.sendall(b'manual')
 
     def up_move(self):
         print("up_move\n")
-        # s.sendall(b'up')
+        s.sendall(b'up')
 
     def down_move(self):
         print("down_move\n")
-        # s.sendall(b'down')
+        s.sendall(b'down')
 
     def left_move(self):
         print("left_move\n")
-        # s.sendall(b'down')
+        s.sendall(b'left')
 
     def right_move(self):
         print("right_move\n")
-        # s.sendall(b'right')
+        s.sendall(b'right')
 
     def stop_move(self):
         print("stop\n")
-        # s.sendall(b'stop')
+        s.sendall(b'stop')
 
 
 
@@ -79,19 +79,19 @@ class mywindow(QtWidgets.QDialog):
         
 
 
-        # s.sendall(b'display')
+        s.sendall(b'display')
 
-        # lux_value = s.recv(10)
-        # print("lux value ", lux_value)
-        # self.ui.lux.setText(str(lux_value))
+        lux_value = s.recv(10)
+        print("lux value ", lux_value)
+        self.ui.lux.setText(str(lux_value))
 
-        # motion_value = s.recv(10)
-        # print("motion_value ", motion_value)
-        # self.ui.motion.setText(str(motion_value))
+        motion_value = s.recv(10)
+        print("motion_value ", motion_value)
+        self.ui.motion.setText(str(motion_value))
         
-        # water_value = s.recv(10)
-        # print("water_value ", water_value)
-        # self.ui.water.setText(str(water_value))
+        water_value = s.recv(10)
+        print("water_value ", water_value)
+        self.ui.water.setText(str(water_value))
 
 
     

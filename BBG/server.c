@@ -142,6 +142,41 @@ void *remote_request_callback()
                     // strcpy(water,"23");
                     // send(new_socket, water, 10 , 0);
                }
+
+               else if(strcmp(buffer,"manual")==0)
+               {
+                    //send m to tiva
+               }
+
+               else if(strcmp(buffer,"auto")==0)
+               {
+                    //send a to tiva
+               }
+
+               else if(strcmp(buffer,"up")==0)
+               {
+                    //send u to tiva
+               }
+
+               else if(strcmp(buffer,"down")==0)
+               {
+                    //send b to tiva
+               }
+
+               else if(strcmp(buffer,"left")==0)
+               {
+                    //send l to tiva
+               }
+
+               else if(strcmp(buffer,"right")==0)
+               {
+                    //send r to tiva
+               }
+
+               else if(strcmp(buffer,"stop")==0)
+               {
+                    //send s to tiva
+               }
                 
             }
             close(new_socket);
@@ -149,3 +184,5 @@ void *remote_request_callback()
         }
     }   
 }   
+
+
