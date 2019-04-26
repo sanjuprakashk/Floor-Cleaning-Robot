@@ -15,6 +15,13 @@ char *get_distance()
 	return distance;
 } 
 
+char *get_waterLevel()
+{
+	memset(waterLevel,' ', sizeof(waterLevel));
+	sprintf(waterLevel,"%f", comm_rec.distance);
+	return waterLevel;
+}
+
 void *communication_thread_callback()
 {
 
@@ -34,78 +41,67 @@ void *communication_thread_callback()
 	int i = 0;
 	printf("Open success? %d\n", isOpen4);
 
-	char test = '1';
-	char test1 = '2';
+	char obj_detect = '1';
+	char valve_close = '2';
+	char valve_open = '3';
+	char lux_auto = '4';
+
 	char task[15];
 	if (isOpen4 == 0) {
 		unsigned char receive[30];
 		while(1)
 		{
-		//	printf("Entered while\n");
+			//	printf("Entered while\n");
 			char buf[30];
-			// sprintf(buf, "foo %d", ++i);
+				// sprintf(buf, "foo %d", ++i);
 
-		/*	strcpy(sensor.task_name,"LUX");
-			sensor.timeStamp = 100;
-			sensor.sensor_data = 9999;
+			/*	strcpy(sensor.task_name,"LUX");
+				sensor.timeStamp = 100;
+				sensor.sensor_data = 9999;
 
-			// Send data to uart1
-			if (uart_send(uart1, &sensor, sizeof(sensor_struct)) < 0) {
-				printf("Could not send data to uart port");
-				return -1;
-			}
-
-*/
-//			usleep(1000);
-
-
-			memset(&comm,0,sizeof(comm));
-			//comm	
-			//comm.sensor_data = 0;
-			// comm_rec.distance = 0;
-		/*	if(uart_receive_task(uart4, &task, sizeof(task)) > 0)
-			{
-				usleep(10000);
-				if(strcmp(task_name,"LUX"))
-				{
-
-				}*/
-				usleep(10000);
-				if(uart_receive(uart4,&sensor, sizeof(sensor_struct)) > 0)
-				{
-					//printf("\n\n Distance = %f\n\n",comm.sensor);//, comm_rec.distance);
-					if((strcmp(sensor.task_name,"DIST") == 0) && sensor.sensor_data < 10)
-					{
-						uart_send(uart2, &test, sizeof(char));
-					}
-					if((strcmp(sensor.task_name,"LUX") == 0) && sensor.sensor_data < 10)
-					{
-						uart_send(uart2, &test1, sizeof(char));
-					}
-					
+				// Send data to uart1
+				if (uart_send(uart1, &sensor, sizeof(sensor_struct)) < 0) {
+					printf("Could not send data to uart port");
+					return -1;
 				}
 
-			//}
+	*/
+	//			usleep(1000);
 
-		/*	strcpy(sensor.task_name,"DIST");
-			sensor.timeStamp = 1001;
-			sensor.sensor_data = 10.0;
 
-			uart_send(uart1, &sensor, sizeof(sensor_struct));
-			usleep(10000);
 
-			uart_receive(uart1, &comm, sizeof(logger_struct));
-			
-			strcpy(sensor.task_name, "WATER");
-			sensor.timeStamp = 1002;
-			sensor.sensor_data = 101.1;
+				// usleep(10000);
+			if(uart_receive(uart4,&sensor, sizeof(sensor_struct)) > 0)
+			{
+				if((strcmp(sensor.task_name,"DIST") == 0) && sensor.sensor_data < 10)
+				{
+					pthread_mutex_lock(&lock_res);
+					uart_send(uart2, &obj_detect, sizeof(char));
+					pthread_mutex_unlock(&lock_res);
+				}
 
-			uart_send(uart1, &sensor, sizeof(sensor_struct));
+				if((strcmp(sensor.task_name,"LUX") == 0) && sensor.sensor_data < 10)
+				{
+					pthread_mutex_lock(&lock_res);
+					uart_send(uart2, &lux_auto, sizeof(char));
+					pthread_mutex_unlock(&lock_res);
+				}
 
-			usleep(10000);
-			
-			uart_receive(uart1, &comm, sizeof(logger_struct));
-			*/
+				if((strcmp(sensor.task_name,"WAT") == 0) && sensor.sensor_data < 300)
+				{
+					pthread_mutex_lock(&lock_res);
+					uart_send(uart2, &valve_close, sizeof(char));
+					pthread_mutex_unlock(&lock_res);
+				}
+
+				if((strcmp(sensor.task_name,"WAT") == 0) && sensor.sensor_data >= 300)
+				{
+					pthread_mutex_lock(&lock_res);
+					uart_send(uart2, &valve_open, sizeof(char));
+					pthread_mutex_unlock(&lock_res);
+				}
+			}
+
 		}
 		uart_close(uart4);
 	}

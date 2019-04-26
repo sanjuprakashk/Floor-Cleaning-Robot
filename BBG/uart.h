@@ -14,6 +14,7 @@
 typedef struct {
 	float lux;
 	float distance;
+	float waterLevel;
 } communication;
 
 typedef enum {

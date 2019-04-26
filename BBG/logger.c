@@ -18,7 +18,7 @@ void *logger_thread_callback()
 	{
 		//uart_send(uart1,&b,sizeof(char));
 
-		usleep(75000);
+		// usleep(75000);
 		memset(log,'\0', sizeof(log));
 		if(uart_receive_task(uart1,&log,sizeof(log)) > 0)
 		{

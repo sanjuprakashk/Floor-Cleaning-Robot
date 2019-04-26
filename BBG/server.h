@@ -17,6 +17,8 @@
 
 #define PORT_NO 8005
 
+extern pthread_mutex_t lock_res;
+
 pthread_t remote_request_thread;
 /**********************************************
        Function for server socket creation

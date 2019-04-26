@@ -18,18 +18,14 @@ void *heartbeat_thread_callback()
 	{
 		usleep(1000000);
 
-//		pthread_mutex_lock(&lock_res);
+		pthread_mutex_lock(&lock_res);
 		success = uart_send(uart2,&hb,sizeof(char));
-//		pthread_mutex_unlock(&lock_res);
+		pthread_mutex_unlock(&lock_res);
 
 		if(success > 0)
 		{
 			printf("HEARTBEAT SENT\n");
 		}
-
-	//	usleep(1000000);
-
-	//	uart_receive_task(uart2, hb1, sizeof(hb1));
 	}
 	uart_close(uart2);
 		

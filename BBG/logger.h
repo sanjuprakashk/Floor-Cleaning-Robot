@@ -8,6 +8,7 @@ typedef struct sensor_struct
     uint32_t timeStamp;
 
     float sensor_data;
+    int8_t mode;
 
 }sensor_struct;
 

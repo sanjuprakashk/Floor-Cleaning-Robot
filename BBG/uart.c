@@ -5,6 +5,8 @@
 
 char temp[15];
 
+struct sensor_struct *rx;
+
 int8_t uart_config(uart_properties *uart)
 {
 	char path[15] = "/dev/ttyO";
@@ -14,7 +16,7 @@ int8_t uart_config(uart_properties *uart)
 
 	struct termios uart_port;
 
-	uart->fd = open(path, O_RDWR | O_NOCTTY | O_SYNC);
+	uart->fd = open(path, O_RDWR | O_NOCTTY | O_NDELAY);
 	if(uart->fd < 0) printf("port failed to open\n");
 
 	if(!isatty(uart->fd)) perror("Not a tty port\n");
@@ -28,7 +30,7 @@ int8_t uart_config(uart_properties *uart)
 	}
 
 	uart_port.c_cflag &= ~(CSIZE | PARENB);
-	uart_port.c_cflag |= CS8;
+	uart_port.c_cflag |= CLOCAL | CS8;
 
 	uart_port.c_iflag&= ~(IGNBRK | ICRNL | INLCR | PARMRK | ISTRIP | IXON); //= IGNPAR | ICRNL;
 	uart_port.c_oflag = 0;
@@ -37,7 +39,7 @@ int8_t uart_config(uart_properties *uart)
 	uart_port.c_cc[VTIME] = 0;
 	uart_port.c_cc[VMIN]  = 1;
 
-	fcntl(uart->fd, F_SETFL, O_NONBLOCK);
+	fcntl(uart->fd, F_SETFL, 0);
 
 	if(cfsetispeed(&uart_port, B115200) < 0)
 	{
@@ -84,35 +86,25 @@ int8_t uart_receive(uart_properties *uart, void *rx_r, int length) {
 	}
 
 //	printf("Size of read = %d \t\t Size of length = %d\n", count, length);
+	rx = rx_r;
 	
-	struct sensor_struct *rx_log = rx_r;
-//	printf("TASK NAME = %s\n", rx_log->task_name);
-
-	if(strcmp(rx_log->task_name,"LUX") == 0)
+	if(strcmp(rx->task_name,"LUX") == 0)
 	{
 	//	struct sensor_struct *rx = rx_r;
-	//	printf("[%d] LUX = %f\n",rx->timeStamp, rx->sensor_data);
+		printf("[%d] LUX = %f\t Mode = %d\n",rx->timeStamp, rx->sensor_data, rx->mode);
 		
 	}
 
-	else if(strcmp(rx_log->task_name,"DIST") == 0)
+	else if(strcmp(rx->task_name,"DIST") == 0)
 	{
-	//	struct sensor_struct *rx = rx_r;
-	//	printf("[%d] DIST = %f\n",rx->timeStamp, rx->sensor_data);
+		printf("[%d] DIST = %f\t Mode = %d\n",rx->timeStamp, rx->sensor_data, rx->mode);
 
 	}
 	
-	else if(strcmp(rx_log->task_name,"WATER") == 0)
+	else if(strcmp(rx->task_name,"WAT") == 0)
 	{
-	//	struct sensor_struct *rx = rx_r;
-	//	printf("[%d] WATER LEVEL = %f\n",rx->timeStamp, rx->sensor_data);
+		printf("[%d] WATER LEVEL = %f\t Mode = %d\n",rx->timeStamp, rx->sensor_data, rx->mode);
 	}
-
-	/*else if(strcmp(rx_log->task_name,"LOG") == 0)
-	{
-		struct logger_struct *rx_log1 = rx_r;
-		printf("[%d] LOG MESSAGE = %s\n", rx_log1->timeStamp, rx_log1->log);
-	}*/
 
 	//printf("Read %s %d %f from uart %i\n", rx->task_name, rx->timeStamp,rx->sensor_data, uart->uart_no);
 	return count;
