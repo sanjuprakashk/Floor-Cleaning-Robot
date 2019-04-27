@@ -17,6 +17,8 @@ typedef struct {
 	float waterLevel;
 } communication;
 
+communication comm_rec;
+
 typedef enum {
 	uart0 = 0, uart1 = 1, uart20 = 2, uart3 = 3, uart4 = 4, uart5 = 5
 } uart;
