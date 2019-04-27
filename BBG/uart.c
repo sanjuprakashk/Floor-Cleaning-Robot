@@ -129,7 +129,7 @@ int8_t uart_close(uart_properties *uart) {
 
 int8_t uart_receive_task(uart_properties *uart, void *rx_r, int length) {
 
-	FILE *fp = fopen("test.txt","a");
+	// FILE *fp = fopen("test.txt","a");
 	int count = 0;
 //	printf("TEST CHAR =%c\n",rx_r);
 	count = read(uart->fd, rx_r, length);
@@ -141,11 +141,12 @@ int8_t uart_receive_task(uart_properties *uart, void *rx_r, int length) {
 	strcpy(temp,rx_r);
 	printf("%s",temp);
 	if(count > 1)
-		fprintf(fp,"%s",rx_r);
+		mq_send(msg_queue, rx_r, MAX_BUFFER_SIZE, 0);
+		// fprintf(fp,"%s",rx_r);
 	
 //	fflush(fp);
 	
-	fclose(fp);
+	// fclose(fp);
 	
 //	memset(task_name,'\0',sizeof(task_name));	
 //	strcpy(task_name, rx_r);

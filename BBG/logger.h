@@ -2,6 +2,15 @@
 #define LOGGER_H
 
 #include "uart.h"
+#include <pthread.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h> // mkdir
+#include <mqueue.h>
+
+#define QUEUE_NAME "/msg_queue"
+#define MAX_BUFFER_SIZE	200
+
 typedef struct sensor_struct
 {
     char task_name[5];
@@ -22,9 +31,15 @@ typedef struct logger_struct
 
 pthread_t logger_thread;
 
+FILE *file_ptr;
+
+mqd_t msg_queue; // Message queue descriptor
+
 extern pthread_mutex_t lock_res;
  
 void *logger_thread_callback();
+
+void logger_init();
 #endif
 
 

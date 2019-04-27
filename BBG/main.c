@@ -15,6 +15,8 @@ int main()
 	pthread_attr_t attr;
 	pthread_attr_init(&attr); 
 
+	logger_init();
+
 	if (pthread_mutex_init(&lock_res, NULL) != 0) 
     { 
         perror("Mutex init failed\n"); 

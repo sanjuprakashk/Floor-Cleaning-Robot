@@ -11,6 +11,7 @@
 
 
 #include "logger.h"
+
 typedef struct {
 	float lux;
 	float distance;
