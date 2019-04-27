@@ -31,14 +31,13 @@
 #include "driverlib/inc/hw_ints.h"
 #include "driverlib/fpu.h"
 #include "log.h"
-
+#include "motor_driver.h"
 void init_ultrasonic_sensor();
 void PortFIntHandler();
 void find_object();
 void vTimerCallback_handler( TimerHandle_t  *pxTimer );
 
 #define DETECT_TIME_PERIOD_MS (1000)
-#define BUFFER (50)
 extern uint32_t output_clock_rate_hz;
 extern QueueHandle_t myQueue_ultra, myQueue_light, myQueue_log;
 

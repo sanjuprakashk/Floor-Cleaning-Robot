@@ -1,6 +1,13 @@
+/*
+ * waterlevel.h
+ *
+ *  Created on: Apr 24, 2019
+ *      Author: Steve
+ */
 
-#ifndef MOTOR_DRIVER_H_
-#define MOTOR_DRIVER_H_
+#ifndef INC_WATERLEVEL_H_
+#define INC_WATERLEVEL_H_
+
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -24,13 +31,18 @@
 #include "utils/uartstdio.h"
 #include "driverlib/inc/hw_ints.h"
 #include "driverlib/fpu.h"
+#include "driverlib/gpio.h"
+#include "drivers/pinout.h"
+#include "driverlib/adc.h"
+#include "log.h"
 
-void init_motor();
-void stop();
-void forward();
-void left();
-void right();
-void backward();
+extern QueueHandle_t myQueue_water;
+
+void Water_level(void *pvParameters);
+void vTimerCallback_WaterLevel_handler( TimerHandle_t  *pxTimer );
+void init_valve();
+void close_value();
+void open_value();
 
 
-#endif
+#endif /* INC_WATERLEVEL_H_ */

@@ -15,6 +15,7 @@
  **********************************************/
 int FLAG_Light = 0;
 struct log_struct_temp log_temp;
+static char buffer_log[BUFFER];
 
 /*for writing and reading as byte from the registers*/
 uint8_t register_data;
@@ -31,6 +32,10 @@ uint16_t LSB_1;
 uint16_t CH0;
 uint16_t CH1;
 float lux_send;
+
+static uint8_t start_again = 1;
+
+
 /**********************************************
  *         Temperature thread
  **********************************************/
@@ -71,11 +76,26 @@ void LightTask(void *pvParameters)
                     read_lux_CH1();
 
                     lux_send = lux_measurement(CH0,CH1);
-                    xQueueSendToBack( myQueue_light,( void * ) &lux_send, QUEUE_TIMEOUT_TICKS ) ;
+                    if(CN_ACTIVE)
+                    {
+                        xQueueSendToBack( myQueue_light,( void * ) &lux_send, QUEUE_TIMEOUT_TICKS ) ;
+                        memset(buffer_log,'\0',BUFFER);
+                        sprintf(buffer_log,"L %f\n",lux_send);
+                        LOG_INFO(buffer_log)
+                    }
+                    if((CN_ACTIVE == 0) && (lux_send < 1.0)&&(start_again == 1))
+                    {
+                        UARTprintf("CN INACTIVE, lux < 1, start\n");
+                        forward();
+                        start_again = 0;
+                    }
+//                    char L[50];
+//                     memset(L,'\0',50);
+//                     sprintf(L,"L %f\n",lux_send);
+//                     UARTprintf("%s",L);
 
-                    memset(buffer_log,'\0',BUFFER);
-                     sprintf(buffer_log,"L %f\n",lux_send);
-                     LOG_INFO(buffer_log)
+
+
 
 
                 }

@@ -15,7 +15,7 @@ uint32_t start, end;
 uint32_t FLAG_UL, conv_complete = 0;
 float time_pulse = 0;
 float distance_send;
-
+static char buffer_log[BUFFER];
 
 void init_ultrasonic_sensor()
 {
@@ -84,11 +84,7 @@ void PortFIntHandler()
             time_pulse = end - start;
             conv_complete = 1;
 
-
         }
-
-
-
 
     taskEXIT_CRITICAL();
 
@@ -135,12 +131,41 @@ void UtrasonicTask(void *pvParameters)
                  if((conv_complete == 1))
                  {
                      distance_send = (((float)(1.0/(output_clock_rate_hz/1000000))*time_pulse)/58);
-                     xQueueSendToBack( myQueue_ultra,( void * ) &distance_send, QUEUE_TIMEOUT_TICKS ) ;
-                     memset(buffer_log,'\0',BUFFER);
-                     sprintf(buffer_log,"D %f\n",distance_send);
-                     LOG_INFO(buffer_log)
-                     LOG_ERROR("Distance\n")
+//                     char D[50];
+//                     memset(D,'\0',50);
+//                     sprintf(D,"D %f\n",distance_send);
+//                     UARTprintf("%s",D);
+
+                     if(CN_ACTIVE)
+                     {
+                         xQueueSendToBack( myQueue_ultra,( void * ) &distance_send, QUEUE_TIMEOUT_TICKS ) ;
+                         memset(buffer_log,'\0',BUFFER);
+                         sprintf(buffer_log,"D %f\n",distance_send);
+                         LOG_INFO(buffer_log)
+                     }
+                     else
+                     {
+                         if(distance_send < 30)
+                         {
+                             UARTprintf("Object detected\n");
+
+                             //object detected
+                             backward();
+
+                             vTaskDelay(1000/portTICK_PERIOD_MS);
+
+                             //normal run of motors
+                            right();
+
+                            vTaskDelay(1000/portTICK_PERIOD_MS);
+
+                            forward();
+                         }
+
+                     }
+
                  }
+
                  FLAG_UL = pdFALSE;
 
              }

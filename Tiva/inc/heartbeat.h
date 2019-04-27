@@ -30,7 +30,8 @@
 #include "utils/uartstdio.h"
 #include "driverlib/inc/hw_ints.h"
 #include "driverlib/fpu.h"
-
+#include "driverlib/gpio.h"
+#include "drivers/pinout.h"
 void Control_Node_heartbeat(void *pvParameters);
 void vTimerCallback_HB_handler( TimerHandle_t  *pxTimer );
 
