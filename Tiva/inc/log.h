@@ -24,7 +24,6 @@
 #define QueueLength (110)
 #define TIMEOUT_TICKS (10)
 #define BUFFER (100)
-char buffer_log[BUFFER];
 
 #define LOG_INFO(str) {\
 char temp_buffer[100];\
@@ -48,8 +47,9 @@ xQueueSendToBack( myQueue_log,( void * ) temp_buffer, QUEUE_TIMEOUT_TICKS ) ;\
 /**********************************************
  *        Global declarations
  **********************************************/
-extern QueueHandle_t myQueue_light, myQueue_ultra, myQueue_log;
+extern QueueHandle_t myQueue_light, myQueue_ultra, myQueue_log, myQueue_water;
 extern int CN_ACTIVE ;
+extern int8_t mode;
 
 /**********************************************
  *        Function Prototypes

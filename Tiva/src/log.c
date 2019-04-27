@@ -16,15 +16,18 @@ typedef struct
     char task[5];
     uint32_t time_stamp;
     float sensor_value;
+    int8_t mode_RN;
 
 
 }send_sensor_data;
+
 
 send_sensor_data tx_data;
 
 
 
 float lux_recv, distance_recv;
+uint32_t Water_level_recv;
 
 void queue_init()
 {
@@ -40,11 +43,18 @@ void queue_init()
         UARTprintf("error on queue creation myQueue_ultra\n");
     }
 
+    myQueue_water = xQueueCreate(QueueLength, sizeof(uint32_t));
+    if(myQueue_water == NULL)
+    {
+        UARTprintf("error on queue creation myQueue_water\n");
+    }
+
     myQueue_log = xQueueCreate(QueueLength, 100);
     if(myQueue_log == NULL)
     {
         UARTprintf("error on queue creation myQueue_ultra\n");
     }
+
 }
 
 /**********************************************
@@ -60,12 +70,7 @@ void LogTask(void *pvParameters)
     unsigned char *ptr1;
         ptr1 = (uint8_t *) (log_data_recv);
 
-//    FF_FILE *logger_fp;
-//    logger_fp = ff_fopen( "logger_local.txt", "a+" );
-//    if(logger_fp == NULL)
-//    {
-//        perror("error on creating local logger file\n");
-//    }
+
 
 
     for(;;)
@@ -75,8 +80,8 @@ void LogTask(void *pvParameters)
             strcpy(tx_data.task,"LUX");
             tx_data.sensor_value = lux_recv;
             tx_data.time_stamp = xTaskGetTickCount();
-            sprintf(buffer, "%f",tx_data.sensor_value);
-
+//            sprintf(buffer, "%f",tx_data.sensor_value);
+//            UARTprintf("L %s\n",buffer);
             UART_send(ptr, sizeof(tx_data));
 
         }
@@ -86,7 +91,20 @@ void LogTask(void *pvParameters)
             strcpy(tx_data.task,"DIST");
             tx_data.sensor_value = distance_recv;
             tx_data.time_stamp = xTaskGetTickCount();
-            sprintf(buffer, "%f",tx_data.sensor_value);
+//            sprintf(buffer, "%f",tx_data.sensor_value);
+            tx_data.mode_RN = mode;
+//            UARTprintf("D %s\n",buffer);
+            UART_send(ptr, sizeof(tx_data));
+
+        }
+
+        if(xQueueReceive(myQueue_water, &Water_level_recv, TIMEOUT_TICKS ) == pdTRUE )
+        {
+            strcpy(tx_data.task,"WAT");
+            tx_data.sensor_value = (float)Water_level_recv;
+            tx_data.time_stamp = xTaskGetTickCount();
+//            sprintf(buffer, "%f",tx_data.sensor_value);
+//            UARTprintf("W %s\n",buffer);
             UART_send(ptr, sizeof(tx_data));
 
         }
@@ -95,15 +113,12 @@ void LogTask(void *pvParameters)
         if(xQueueReceive(myQueue_log, log_data_recv, TIMEOUT_TICKS ) == pdTRUE )
         {
 
-            UARTprintf("--> Log  %s\n",log_data_recv);
+            //UARTprintf("--> Log  %s\n",log_data_recv);
             if(CN_ACTIVE == pdTRUE)
             {
                 UART_send_log(ptr1, sizeof(log_data_recv)+5);
             }
-            else
-            {
-               // ff_fwrite( log_data_recv, 1, strlen(log_data_recv), logger_fp );
-            }
+
 
         }
     }
