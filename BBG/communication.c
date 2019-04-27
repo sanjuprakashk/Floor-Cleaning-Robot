@@ -22,6 +22,16 @@ char *get_waterLevel()
 	return waterLevel;
 }
 
+char *get_mode()
+{
+	memset(mode,' ', sizeof(mode));
+	if(!comm_rec.mode)
+		sprintf(mode,"Auto");
+	if(comm_rec.mode)
+		sprintf(mode,"Manual");
+	return mode;
+}
+
 void *communication_thread_callback()
 {
 
@@ -73,7 +83,7 @@ void *communication_thread_callback()
 				// usleep(10000);
 			if(uart_receive(uart4,&sensor, sizeof(sensor_struct)) > 0)
 			{
-				if((strcmp(sensor.task_name,"DIST") == 0) && sensor.sensor_data < 10)
+				if((strcmp(sensor.task_name,"DIST") == 0) && sensor.sensor_data < 30)
 				{
 					pthread_mutex_lock(&lock_res);
 					uart_send(uart2, &obj_detect, sizeof(char));

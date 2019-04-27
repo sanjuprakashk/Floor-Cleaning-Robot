@@ -10,7 +10,7 @@
 char lux[10];
 char distance[10];
 char waterLevel[10];
-char modeOfOperation[10];
+char mode[10];
 
 pthread_t communication_thread;
 
@@ -28,4 +28,5 @@ char *get_distance();
 
 char *get_waterLevel();
 
+char *get_mode();
 #endif

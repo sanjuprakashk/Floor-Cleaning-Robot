@@ -146,6 +146,10 @@ void *remote_request_callback()
           char waterLevel_send[10];
           strcpy(waterLevel_send, get_waterLevel());
           send(new_socket, waterLevel_send, 10, 0);
+
+	  char mode_send[10];
+	  strcpy(mode_send, get_mode());
+	  send(new_socket, mode_send, 10, 0);
         }
 
         else if(strcmp(buffer,"manual")==0)

@@ -36,8 +36,8 @@ int8_t uart_config(uart_properties *uart)
 	uart_port.c_oflag = 0;
 	uart_port.c_lflag &= ~(ECHO | ECHONL | ICANON | IEXTEN | ISIG);
 
-	uart_port.c_cc[VTIME] = 0;
-	uart_port.c_cc[VMIN]  = 1;
+//	uart_port.c_cc[VTIME] = 0;
+//	uart_port.c_cc[VMIN]  = 1;
 
 	fcntl(uart->fd, F_SETFL, 0);
 
@@ -70,7 +70,7 @@ int8_t uart_send(uart_properties *uart, char *tx, int length) {
 	}
 	
 	//printf("Size of write = %d\n", count);
-	printf("Writing %c\n",*tx);
+	//printf("Writing %c\n",*tx);
 	/*struct sensor_struct *tx_r = tx;
 	printf("Wrote %s %d %f to uart %i\n",tx_r->task_name, tx_r->timeStamp, tx_r->sensor_data, uart->uart_no);
 	*/
@@ -94,6 +94,8 @@ int8_t uart_receive(uart_properties *uart, void *rx_r, int length) {
 	//	struct sensor_struct *rx = rx_r;
 		printf("[%d] LUX = %f\t Mode = %d\n",rx->timeStamp, rx->sensor_data, rx->mode);
 		comm_rec.lux = rx->sensor_data;
+
+	comm_rec.mode = rx->mode;
 		
 	}
 
@@ -102,13 +104,19 @@ int8_t uart_receive(uart_properties *uart, void *rx_r, int length) {
 		printf("[%d] DIST = %f\t Mode = %d\n",rx->timeStamp, rx->sensor_data, rx->mode);
 		comm_rec.distance = rx->sensor_data;
 
+	comm_rec.mode = rx->mode;
+
 	}
 	
 	else if(strcmp(rx->task_name,"WAT") == 0)
 	{
 		printf("[%d] WATER LEVEL = %f\t Mode = %d\n",rx->timeStamp, rx->sensor_data, rx->mode);
 		comm_rec.waterLevel = rx->sensor_data;
+
+	comm_rec.mode = rx->mode;
 	}
+
+//	comm_rec.mode = rx->mode;
 
 	//printf("Read %s %d %f from uart %i\n", rx->task_name, rx->timeStamp,rx->sensor_data, uart->uart_no);
 	return count;
@@ -132,7 +140,8 @@ int8_t uart_receive_task(uart_properties *uart, void *rx_r, int length) {
 	memset(temp,'\0', sizeof(temp));
 	strcpy(temp,rx_r);
 	printf("%s",temp);
-	fprintf(fp,"%s",rx_r);
+	if(count > 1)
+		fprintf(fp,"%s",rx_r);
 	
 //	fflush(fp);
 	
