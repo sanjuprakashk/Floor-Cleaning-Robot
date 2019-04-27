@@ -62,14 +62,15 @@ int8_t uart_config(uart_properties *uart)
 	return 0;
 }
 
-int8_t uart_send(uart_properties *uart, void *tx, int length) {
+int8_t uart_send(uart_properties *uart, char *tx, int length) {
 	int count = write(uart->fd, tx, length);
 	if (count == -1) {
 		printf("Error in write\n");
 		return -1;
 	}
 	
-	printf("Size of write = %d\n", count);
+	//printf("Size of write = %d\n", count);
+	printf("Writing %c\n",*tx);
 	/*struct sensor_struct *tx_r = tx;
 	printf("Wrote %s %d %f to uart %i\n",tx_r->task_name, tx_r->timeStamp, tx_r->sensor_data, uart->uart_no);
 	*/

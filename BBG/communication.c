@@ -87,19 +87,32 @@ void *communication_thread_callback()
 					pthread_mutex_unlock(&lock_res);
 				}
 
-				if((strcmp(sensor.task_name,"WAT") == 0) && sensor.sensor_data < 300)
+				if((strcmp(sensor.task_name,"WAT") == 0) && sensor.sensor_data < 300 && already_closed == 0)
 				{
 					pthread_mutex_lock(&lock_res);
 					uart_send(uart2, &valve_close, sizeof(char));
 					pthread_mutex_unlock(&lock_res);
+					already_closed = 1;
+					already_open = 0;
 				}
+			
 
-				if((strcmp(sensor.task_name,"WAT") == 0) && sensor.sensor_data >= 300)
+				if((strcmp(sensor.task_name,"WAT") == 0) && sensor.sensor_data >= 300 && already_open == 0)
 				{
 					pthread_mutex_lock(&lock_res);
 					uart_send(uart2, &valve_open, sizeof(char));
 					pthread_mutex_unlock(&lock_res);
+					already_open = 1;
+					already_closed = 0;
 				}
+			/*	else
+				{
+				
+					pthread_mutex_lock(&lock_res);
+					uart_send(uart2, &valve_close, sizeof(char));
+					pthread_mutex_unlock(&lock_res);
+				}
+			*/
 			}
 
 		}

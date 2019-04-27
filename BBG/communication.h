@@ -2,7 +2,7 @@
 #define COMMUNICATION_H
 
 #include <pthread.h>
-
+#include <stdint.h>
 
 #include "uart.h"
 #include "logger.h"
@@ -13,6 +13,9 @@ char waterLevel[10];
 char modeOfOperation[10];
 
 pthread_t communication_thread;
+
+uint8_t already_open;
+uint8_t already_closed;
 
 communication comm_rec;
 

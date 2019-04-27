@@ -13,7 +13,6 @@ void *heartbeat_thread_callback()
 	printf("IS OPEN 2: %d\n",isOpen2);
 	char hb ='h';
 
-	char hb1[2]; 
 	while(1)
 	{
 		usleep(1000000);
