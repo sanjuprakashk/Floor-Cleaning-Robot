@@ -3,7 +3,7 @@
 #include "uart.h"
 
 
-char temp[15];
+char temp[MAX_BUFFER_SIZE];
 
 struct sensor_struct *rx;
 
@@ -62,7 +62,7 @@ int8_t uart_config(uart_properties *uart)
 	return 0;
 }
 
-int8_t uart_send(uart_properties *uart, char *tx, int length) {
+int8_t uart_send(uart_properties *uart, void *tx, int length) {
 	int count = write(uart->fd, tx, length);
 	if (count == -1) {
 		printf("Error in write\n");
@@ -129,7 +129,7 @@ int8_t uart_close(uart_properties *uart) {
 
 int8_t uart_receive_task(uart_properties *uart, void *rx_r, int length) {
 
-	// FILE *fp = fopen("test.txt","a");
+	FILE *fp = fopen("test.txt","a");
 	int count = 0;
 //	printf("TEST CHAR =%c\n",rx_r);
 	count = read(uart->fd, rx_r, length);
@@ -141,15 +141,16 @@ int8_t uart_receive_task(uart_properties *uart, void *rx_r, int length) {
 	strcpy(temp,rx_r);
 	printf("%s",temp);
 	if(count > 1)
-		mq_send(msg_queue, rx_r, MAX_BUFFER_SIZE, 0);
+	{
+		mq_send(msg_queue, temp, MAX_BUFFER_SIZE, 0);
 		// fprintf(fp,"%s",rx_r);
-	
+	}
 //	fflush(fp);
 	
-	// fclose(fp);
+//	 fclose(fp);
 	
 //	memset(task_name,'\0',sizeof(task_name));	
 //	strcpy(task_name, rx_r);
 
-	return 0;
+	return 1;
 }	

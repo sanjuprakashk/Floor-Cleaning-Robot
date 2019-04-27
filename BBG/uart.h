@@ -9,7 +9,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-
 #include "logger.h"
 
 typedef struct {
@@ -34,7 +33,7 @@ typedef struct {
 
 uart_properties  *uart2;
 
-int8_t uart_send(uart_properties *uart, char *tx, int length);
+int8_t uart_send(uart_properties *uart, void *tx, int length);
 
 int8_t uart_receive(uart_properties *uart, void *rx_r, int length);
 
