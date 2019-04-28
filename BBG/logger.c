@@ -26,32 +26,16 @@ void logger_init()
     msg_queue = mq_open(QUEUE_NAME, O_CREAT | O_RDWR | O_NONBLOCK, 0666, &mq_attributes);
     printf("Return value of queue open = %d\n", msg_queue);
 }
+
 void *logger_thread_callback()
 {
 	char buffer[MAX_BUFFER_SIZE];
-	printf("Inside logger thread");
-	uart_properties *uart1  = malloc(sizeof(uart_properties));
-	uart1->uart_no = 1;
-	uart1->baudrate = B115200;
-
-	uint8_t isOpen1 = uart_config(uart1);
+	printf("Inside logger thread\n");
 	
-	char log[15];
-	char b = 's';
 	
 	file_ptr = fopen("test.txt", "a+");
 	while(1)
 	{
-		/*strcpy(buffer,"OKAY\n");
-		uart_send(uart1,&buffer,sizeof(buffer));
-		strcpy(buffer, "whatsup bruh");
-		mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
-		 usleep(75000);*/
-		memset(log,'\0', sizeof(log));
-		if(uart_receive_task(uart1,&log,sizeof(log)) > 0)
-		{
-			printf("UART1\n");
-		}	
 
 		if(mq_receive(msg_queue, buffer, MAX_BUFFER_SIZE, 0) > 0)
 	 	{
@@ -61,9 +45,6 @@ void *logger_thread_callback()
 	 		pthread_mutex_unlock(&lock);
 	 	}
 	}	
-	uart_close(uart1);
-		
-
 
 }
 
