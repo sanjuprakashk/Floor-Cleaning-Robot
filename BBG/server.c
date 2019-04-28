@@ -72,8 +72,13 @@ void *remote_request_callback()
     char left = 'l';
     char right = 'r';
     char stop = 's';
+    char clean = 'o';
+    bool auto_enable = 0;
 
-
+    char mode_send[10];
+    char waterLevel_send[10];
+    char distance_send[10];
+    char lux_send[10];
 
 //creating socket for server
     if(socket_creation_server(PORT_NO)== -1)
@@ -135,29 +140,26 @@ void *remote_request_callback()
          {
           printf("Received request for display\n");
 
-          char lux_send[10];
           strcpy(lux_send, get_lux());
           send(new_socket, lux, 10 , 0);
 
-          char distance_send[10];
           strcpy(distance_send, get_distance());
           send(new_socket, distance_send, 10 , 0);
 
-          char waterLevel_send[10];
           strcpy(waterLevel_send, get_waterLevel());
           send(new_socket, waterLevel_send, 10, 0);
 
-	  char mode_send[10];
-	  strcpy(mode_send, get_mode());
-	  send(new_socket, mode_send, 10, 0);
+      	  strcpy(mode_send, get_mode());
+      	  send(new_socket, mode_send, 10, 0);
         }
 
         else if(strcmp(buffer,"manual")==0)
         {
-                //send m to tiva
+          //send m to tiva
           pthread_mutex_lock(&lock_res);
           uart_send(uart2, &manual, sizeof(char));
           pthread_mutex_unlock(&lock_res);
+          auto_enable = 0;
         }
 
         else if(strcmp(buffer,"auto")==0)
@@ -166,6 +168,7 @@ void *remote_request_callback()
           pthread_mutex_lock(&lock_res);
           uart_send(uart2, &automatic, sizeof(char));
           pthread_mutex_unlock(&lock_res);
+          auto_enable = 1;
         }
 
         else if(strcmp(buffer,"up")==0)
@@ -205,6 +208,14 @@ void *remote_request_callback()
                 //send s to tiva
           pthread_mutex_lock(&lock_res);
           uart_send(uart2, &stop, sizeof(char));
+          pthread_mutex_unlock(&lock_res);
+        }
+
+        else if((strcmp(buffer, "on") == 0) && auto_enable == 1)
+        {
+          //send o to tiva
+          pthread_mutex_lock(&lock_res);
+          uart_send(uart2, &clean, sizeof(char));
           pthread_mutex_unlock(&lock_res);
         }
 
