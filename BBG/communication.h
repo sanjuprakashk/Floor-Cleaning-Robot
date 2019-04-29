@@ -18,7 +18,11 @@ pthread_t communication_thread;
 uint8_t already_open;
 uint8_t already_closed;
 
+int tiva_active, tiva_active_prev;
+
 extern pthread_mutex_t lock_res;
+
+
 
 void *communication_thread_callback();
 

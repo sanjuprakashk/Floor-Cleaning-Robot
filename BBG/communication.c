@@ -35,7 +35,6 @@ char *get_mode()
 	return mode;
 }
 
-int tiva_active, tiva_active_prev;
 void beat_timer_handler(union sigval val)
 {
 	char buffer[MAX_BUFFER_SIZE];
@@ -65,6 +64,7 @@ void beat_timer_handler(union sigval val)
 
 void *communication_thread_callback()
 {
+	char buffer[MAX_BUFFER_SIZE];
 	tiva_active = 0;
 
 	tiva_active_prev = 0;
@@ -106,7 +106,7 @@ void *communication_thread_callback()
 		while(1)
 		{
 			//	printf("Entered while\n");
-			char buf[30];
+		
 				// sprintf(buf, "foo %d", ++i);
 
 			/*	strcpy(sensor.task_name,"LUX");
@@ -134,6 +134,8 @@ void *communication_thread_callback()
 					pthread_mutex_lock(&lock_res);
 					uart_send(uart2, &obj_detect, sizeof(char));
 					pthread_mutex_unlock(&lock_res);
+					strcpy(buffer,"WARN Objected detected\n");
+					mq_send(msg_queue, temp, MAX_BUFFER_SIZE, 0);
 				}
 
 				if((strcmp(sensor.task_name,"LUX") == 0) && sensor.sensor_data < 10)
@@ -141,6 +143,8 @@ void *communication_thread_callback()
 					pthread_mutex_lock(&lock_res);
 					uart_send(uart2, &lux_auto, sizeof(char));
 					pthread_mutex_unlock(&lock_res);
+					strcpy(buffer,"WARN Lux below threshold\n");
+					mq_send(msg_queue, temp, MAX_BUFFER_SIZE, 0);
 				}
 
 				if((strcmp(sensor.task_name,"WAT") == 0) && sensor.sensor_data < 300 && already_closed == 0)
@@ -150,6 +154,8 @@ void *communication_thread_callback()
 					pthread_mutex_unlock(&lock_res);
 					already_closed = 1;
 					already_open = 0;
+					strcpy(buffer,"WARN Valve closed\n");
+					mq_send(msg_queue, temp, MAX_BUFFER_SIZE, 0);
 				}
 			
 
@@ -160,20 +166,12 @@ void *communication_thread_callback()
 					pthread_mutex_unlock(&lock_res);
 					already_open = 1;
 					already_closed = 0;
+					strcpy(buffer,"WARN Valve Opened\n");
+					mq_send(msg_queue, temp, MAX_BUFFER_SIZE, 0);
 				}
-			/*	else
-				{
-				
-					pthread_mutex_lock(&lock_res);
-					uart_send(uart2, &valve_close, sizeof(char));
-					pthread_mutex_unlock(&lock_res);
-				}
-			*/
 			}
 
 		}
 		uart_close(uart4);
 	}
-	printf("EOF\n");
-	// return 0;
 }
