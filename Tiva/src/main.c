@@ -206,12 +206,14 @@ void ReadUartTask(void *pvParameters)
 
                 else if(c == 'm') //manual mode
                 {
+                    UARTprintf("CN: Manual mode\n");
                     mode = 1 ;
                     stop();
 
                 }
                 else if(c == 'a') //auto mode
                 {
+                    UARTprintf("CN: Auto mode\n");
                     mode = 0 ;
                 }
 
@@ -219,6 +221,7 @@ void ReadUartTask(void *pvParameters)
                 {
                     if(mode == 1)
                     {
+                        UARTprintf("CN: forward\n");
                         forward();
                     }
 
@@ -227,6 +230,7 @@ void ReadUartTask(void *pvParameters)
                 {
                    stop();
                    start_again = 1;
+                   UARTprintf("CN: stop\n");
                 }
 
                 else if(c == 'l') //left
@@ -234,6 +238,7 @@ void ReadUartTask(void *pvParameters)
                     if(mode == 1)
                     {
                         left();
+                        UARTprintf("CN: left\n");
                         vTaskDelay(1000/portTICK_PERIOD_MS);
                         stop();
 
@@ -245,6 +250,7 @@ void ReadUartTask(void *pvParameters)
                     if(mode == 1)
                     {
                         right();
+                        UARTprintf("CN: right\n");
                         vTaskDelay(1000/portTICK_PERIOD_MS);
                         stop();
 
@@ -256,17 +262,16 @@ void ReadUartTask(void *pvParameters)
                     if(mode == 1)
                     {
                        backward();
+                       UARTprintf("CN: back\n");
 
                     }
 
                 }
                 else if(c == 'o') //force start
                 {
-                    if(mode == 0)
-                    {
-                       forward();
-
-                    }
+                    mode = 0 ;
+                    forward();
+                    UARTprintf("CN: force on\n");
 
                 }
             }

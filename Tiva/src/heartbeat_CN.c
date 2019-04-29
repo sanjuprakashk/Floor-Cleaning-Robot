@@ -43,12 +43,12 @@ void Control_Node_heartbeat(void *pvParameters)
         {
             if(Pulse <= Prev_pulse)
             {
-                UARTprintf("Control node dead Pr %d P %d\n",Prev_pulse, Pulse);
+               // UARTprintf("Control node dead Pr %d P %d\n",Prev_pulse, Pulse);
                 CN_ACTIVE = pdFALSE;
             }
             else
             {
-                UARTprintf("Control node active Pr %d P %d\n",Prev_pulse, Pulse);
+               // UARTprintf("Control node active Pr %d P %d\n",Prev_pulse, Pulse);
                 CN_ACTIVE = pdTRUE;
             }
 
