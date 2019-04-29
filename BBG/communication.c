@@ -44,6 +44,10 @@ void beat_timer_handler(union sigval val)
 	{
 		printf("TIVA not active\n");
 	}
+	else
+	{
+		printf("Tiva active\n");
+	}
 
 	tiva_active_prev = tiva_active;
 

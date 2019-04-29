@@ -44,10 +44,10 @@ int kick_timer(timer_t timer_id, int interval_ns)
 {
    struct itimerspec in;
 
-	in.it_value.tv_sec = 0;
-    in.it_value.tv_nsec = interval_ns; //sets initial time period
-    in.it_interval.tv_sec = 0;
-    in.it_interval.tv_nsec = interval_ns; //sets interval
+    in.it_value.tv_sec = 2;
+    in.it_value.tv_nsec = 0;//interval_ns; //sets initial time period
+    in.it_interval.tv_sec = 2;
+    in.it_interval.tv_nsec =0;// interval_ns; //sets interval
     
     //issue the periodic timer request here.
     if( (timer_settime(timer_id, 0, &in, NULL)) != SUCCESS)
