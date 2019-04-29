@@ -10,6 +10,7 @@
 #include <stdint.h>
 
 #include "logger.h"
+#include "heartbeat.h"
 
 typedef struct {
 	float lux;

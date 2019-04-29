@@ -1,2 +1,6 @@
+CC = arm-linux-gnueabihf-gcc
+
+CFLAGS = -Iinc/ -Wall -lpthread -lrt -g
 all:
-	arm-linux-gnueabihf-gcc main.c uart.c communication.c server.c logger.c heartbeat.c log_receiver.c POSIX_timer.c -lpthread -lrt -g -o main
+	$(CC) src/main.c src/uart.c src/communication.c src/server.c src/logger.c src/heartbeat.c src/log_receiver.c src/POSIX_timer.c $(CFLAGS) -o main
+
