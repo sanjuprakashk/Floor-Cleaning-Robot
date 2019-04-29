@@ -19,7 +19,6 @@ def sms():
 
             print("Established connection\n")
             print("Sent signal to start\n")
-            s.sendall(b'auto')
             s.sendall(b'on')
 
         resp = MessagingResponse()
@@ -28,4 +27,6 @@ def sms():
         return str(resp)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True,)
+
+
