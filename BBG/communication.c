@@ -18,7 +18,7 @@ char *get_distance()
 char *get_waterLevel()
 {
 	memset(waterLevel,' ', sizeof(waterLevel));
-	sprintf(waterLevel,"%f", comm_rec.distance);
+	sprintf(waterLevel,"%f", comm_rec.waterLevel);
 	return waterLevel;
 }
 
