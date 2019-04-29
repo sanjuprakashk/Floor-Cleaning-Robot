@@ -35,6 +35,17 @@ char *get_mode()
 	return mode;
 }
 
+char *get_dgMode()
+{
+	memset(dg_mode,' ', sizeof(dg_mode));
+	if(!comm_rec.dg_mode)
+		sprintf(dg_mode,"Normal");
+	if(comm_rec.dg_mode)
+		sprintf(dg_mode,"Degraded");
+
+	return dg_mode;
+}
+
 void beat_timer_handler(union sigval val)
 {
 	char buffer[MAX_BUFFER_SIZE];
@@ -125,21 +136,22 @@ void *communication_thread_callback()
 
 
 				// usleep(10000);
+			//sensor.sensor_data = 0;
 			if(uart_receive(uart4,&sensor, sizeof(sensor_struct)) > 0)
 			{
 
-				tiva_active++;
-				if((strcmp(sensor.task_name,"DIST") == 0) && sensor.sensor_data < 30)
+				//tiva_active++;
+				if((strcmp(sensor.task_name,"DIST") == 0) && comm_rec.distance< 30)
 				{
 					pthread_mutex_lock(&lock_res);
 					uart_send(uart2, &obj_detect, sizeof(char));
 					pthread_mutex_unlock(&lock_res);
-					printf("OBJ DETECTED\n");
+					printf("OBJ DETECTED = %f\n",sensor.sensor_data);
 					strcpy(buffer,"WARN Objected detected\n");
 					mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 				}
 
-				if((strcmp(sensor.task_name,"LUX") == 0) && sensor.sensor_data < 10)
+				else if((strcmp(sensor.task_name,"LUX") == 0) && comm_rec.lux < 10)
 				{
 					pthread_mutex_lock(&lock_res);
 					uart_send(uart2, &lux_auto, sizeof(char));
@@ -148,7 +160,7 @@ void *communication_thread_callback()
 					mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 				}
 
-				if((strcmp(sensor.task_name,"WAT") == 0) && sensor.sensor_data < 300 && already_closed == 0)
+				else if((strcmp(sensor.task_name,"WAT") == 0) && comm_rec.waterLevel < 300 && already_closed == 0)
 				{
 					pthread_mutex_lock(&lock_res);
 					uart_send(uart2, &valve_close, sizeof(char));
@@ -160,7 +172,7 @@ void *communication_thread_callback()
 				}
 			
 
-				if((strcmp(sensor.task_name,"WAT") == 0) && sensor.sensor_data >= 300 && already_open == 0)
+				else if((strcmp(sensor.task_name,"WAT") == 0) && comm_rec.waterLevel >= 300 && already_open == 0)
 				{
 					pthread_mutex_lock(&lock_res);
 					uart_send(uart2, &valve_open, sizeof(char));
@@ -171,10 +183,10 @@ void *communication_thread_callback()
 					mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 				}
 
-			/*	if(strcmp(sensor.task_name,"BEA") == 0)
+				else if(strcmp(sensor.task_name,"BEA") == 0)
 				{
 					printf("BEAT\n");
-					//tiva_active++;
+					tiva_active++;
 					if(sensor.dg_mode == 0)
 					{
 						strcpy(buffer,"INFO In normal operation\n");
@@ -185,7 +197,7 @@ void *communication_thread_callback()
 						strcpy(buffer,"WARN Degraded operation\n");
 						mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 					}
-				}*/
+				}
 			}
 
 		}

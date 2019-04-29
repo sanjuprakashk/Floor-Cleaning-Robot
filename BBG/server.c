@@ -79,6 +79,7 @@ void *remote_request_callback()
     char waterLevel_send[10];
     char distance_send[10];
     char lux_send[10];
+    char dgMode_send[10];
 
 //creating socket for server
     if(socket_creation_server(PORT_NO)== -1)
@@ -152,7 +153,10 @@ void *remote_request_callback()
 
       	  strcpy(mode_send, get_mode());
       	  send(new_socket, mode_send, 10, 0);
-        }
+        
+	  strcpy(dgMode_send, get_dgMode());
+	  send(new_socket, dgMode_send, 10, 0);
+	}
 
         else if(strcmp(buffer,"manual")==0)
         {
