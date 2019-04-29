@@ -24,6 +24,7 @@ pthread_t communication_thread;
 
 uint8_t already_open;
 uint8_t already_closed;
+uint8_t water_outOfRange;
 
 extern pthread_mutex_t lock_res;
 

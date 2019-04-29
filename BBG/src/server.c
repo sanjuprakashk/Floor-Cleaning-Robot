@@ -177,7 +177,7 @@ void *remote_request_callback()
           strcpy(valve_status_send, get_valveStatus());
           send(new_socket, valve_status_send, 10, 0);
           
-	       }
+	    }
 
         else if(strcmp(buffer,"manual")==0)
         {

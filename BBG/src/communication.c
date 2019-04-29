@@ -80,10 +80,11 @@ char *get_opStatus_lux()
 char *get_opStatus_water()
 {
 	memset(water_opstatus,' ', sizeof(water_opstatus));
-	if(!water_dead)
-		sprintf(water_opstatus,"Alive");
-	if(water_dead)
+	if(water_dead || water_outOfRange)
 		sprintf(water_opstatus,"Dead");
+	else
+		sprintf(water_opstatus,"Alive");
+	
 
 	return water_opstatus;
 }
@@ -128,7 +129,7 @@ void *communication_thread_callback()
 	uart4->baudrate = B115200;
 
 	uint8_t isOpen4 = uart_config(uart4);
-	
+
 	printf("Open success? %d\n", isOpen4);
 
 	char obj_detect = '1';
@@ -190,6 +191,10 @@ void *communication_thread_callback()
 					mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 				}
 
+				else if((strcmp(sensor.task_name,"WAT") == 0) && comm_rec.waterLevel > 3000)
+				{
+					water_outOfRange = 1;
+				}
 				else if((strcmp(sensor.task_name,"WAT") == 0) && comm_rec.waterLevel < 300 && already_closed == 0)
 				{
 					pthread_mutex_lock(&lock_res);
@@ -197,6 +202,7 @@ void *communication_thread_callback()
 					pthread_mutex_unlock(&lock_res);
 					already_closed = 1;
 					already_open = 0;
+					water_outOfRange = 0;
 					printf("ERROR Valve closed = %f\n", comm_rec.waterLevel);
 					//strcpy(buffer,"WARN Valve closed\n");
 					//mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
@@ -210,6 +216,7 @@ void *communication_thread_callback()
 					pthread_mutex_unlock(&lock_res);
 					already_open = 1;
 					already_closed = 0;
+					water_outOfRange = 0;
 					printf("ERROR Valve opened = %f\n", comm_rec.waterLevel);
 					//strcpy(buffer,"WARN Valve closed\n");
 					//mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
