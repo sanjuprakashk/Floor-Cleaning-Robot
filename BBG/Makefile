@@ -1,4 +1,4 @@
-CC = arm-linux-gnueabihf-gcc
+CC = arm-linux-gcc
 
 CFLAGS = -Iinc/ -Wall -lpthread -lrt -g
 all:

@@ -128,7 +128,7 @@ void *communication_thread_callback()
 	uart4->baudrate = B115200;
 
 	uint8_t isOpen4 = uart_config(uart4);
-	
+	int i = 0;
 	printf("Open success? %d\n", isOpen4);
 
 	char obj_detect = '1';

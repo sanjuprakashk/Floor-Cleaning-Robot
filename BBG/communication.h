@@ -48,6 +48,4 @@ char *get_opStatus_distance();
 char *get_opStatus_lux();
 
 char *get_opStatus_water();
-
-char *get_valveStatus();
 #endif
