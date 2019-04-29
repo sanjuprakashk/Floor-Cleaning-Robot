@@ -40,15 +40,14 @@ int setup_timer_POSIX(timer_t *timer_id,void (*handler)(union sigval))
 					Start configuration
 			Parameter : delay in nano secs
 *****************************************************************/
-int kick_timer(timer_t timer_id, int interval_ns)
+int kick_timer(timer_t timer_id, int interval_s)
 {
    struct itimerspec in;
 
-    in.it_value.tv_sec = 2;
-    in.it_value.tv_nsec = 0;//interval_ns; //sets initial time period
-    in.it_interval.tv_sec = 2;
-    in.it_interval.tv_nsec =0;// interval_ns; //sets interval
-    
+    in.it_value.tv_sec = interval_s; //sets initial time period
+    in.it_value.tv_nsec = 0;
+    in.it_interval.tv_sec = interval_s; //sets interval
+    in.it_interval.tv_nsec =0;
     //issue the periodic timer request here.
     if( (timer_settime(timer_id, 0, &in, NULL)) != SUCCESS)
     {

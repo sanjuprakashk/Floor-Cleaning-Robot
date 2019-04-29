@@ -2,7 +2,7 @@
 
 timer_t  timer_id_heartbeat;
 
-#define HEART_BEAT_CHECK_PERIOD (900000000)//0.9 s
+#define TIVA_HEART_BEAT_CHECK_PERIOD (3)//3 s
 
 char *get_lux()
 {
@@ -42,16 +42,20 @@ void beat_timer_handler(union sigval val)
 	//restarting the heartbeat timer
 	if(tiva_active <= tiva_active_prev)
 	{
-		printf("TIVA not active\n");
+		printf("ERROR Tiva dead\n");
+		strcpy(buffer,"ERROR Tiva dead");
+		mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 	}
 	else
 	{
-		printf("Tiva active\n");
+		strcpy(buffer,"INFO Tiva alive");
+		mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
+		printf("INFO Tiva alive\n");
 	}
 
 	tiva_active_prev = tiva_active;
 
-	if((kick_timer(timer_id_heartbeat, HEART_BEAT_CHECK_PERIOD)) == -1)
+	if((kick_timer(timer_id_heartbeat, TIVA_HEART_BEAT_CHECK_PERIOD)) == -1)
 	{
 		perror("Error on kicking timer for heartbeat\n");
 	}
@@ -91,7 +95,7 @@ void *communication_thread_callback()
 		perror("Error on creating timer for heartbeat\n");
 	}
 
-	if((kick_timer(timer_id_heartbeat, HEART_BEAT_CHECK_PERIOD)) == -1)
+	if((kick_timer(timer_id_heartbeat, TIVA_HEART_BEAT_CHECK_PERIOD)) == -1)
 	{
 		perror("Error on kicking timer for heartbeat\n");
 	}
