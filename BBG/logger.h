@@ -18,7 +18,7 @@ typedef struct sensor_struct
 
     float sensor_data;
     int8_t mode;
-
+    int8_t dg_mode;
 }sensor_struct;
 
 typedef struct logger_struct

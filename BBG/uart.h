@@ -16,6 +16,7 @@ typedef struct {
 	float distance;
 	float waterLevel;
 	int8_t mode;
+	int8_t dg_mode;
 } communication;
 
 communication comm_rec;

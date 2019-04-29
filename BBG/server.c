@@ -135,11 +135,11 @@ void *remote_request_callback()
         {
 	
 	 
-          printf("Received request %s - %ld\n",buffer,strlen(buffer));
+         // printf("Received request %s - %ld\n",buffer,strlen(buffer));
 
          if(strcmp(buffer,"display")==0)
          {
-          printf("Received request for display\n");
+          //printf("Received request for display\n");
 
           strcpy(lux_send, get_lux());
           send(new_socket, lux, 10 , 0);

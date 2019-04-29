@@ -134,8 +134,9 @@ void *communication_thread_callback()
 					pthread_mutex_lock(&lock_res);
 					uart_send(uart2, &obj_detect, sizeof(char));
 					pthread_mutex_unlock(&lock_res);
+					printf("OBJ DETECTED\n");
 					strcpy(buffer,"WARN Objected detected\n");
-					mq_send(msg_queue, temp, MAX_BUFFER_SIZE, 0);
+					mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 				}
 
 				if((strcmp(sensor.task_name,"LUX") == 0) && sensor.sensor_data < 10)
@@ -144,7 +145,7 @@ void *communication_thread_callback()
 					uart_send(uart2, &lux_auto, sizeof(char));
 					pthread_mutex_unlock(&lock_res);
 					strcpy(buffer,"WARN Lux below threshold\n");
-					mq_send(msg_queue, temp, MAX_BUFFER_SIZE, 0);
+					mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 				}
 
 				if((strcmp(sensor.task_name,"WAT") == 0) && sensor.sensor_data < 300 && already_closed == 0)
@@ -155,7 +156,7 @@ void *communication_thread_callback()
 					already_closed = 1;
 					already_open = 0;
 					strcpy(buffer,"WARN Valve closed\n");
-					mq_send(msg_queue, temp, MAX_BUFFER_SIZE, 0);
+					mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 				}
 			
 
@@ -167,8 +168,24 @@ void *communication_thread_callback()
 					already_open = 1;
 					already_closed = 0;
 					strcpy(buffer,"WARN Valve Opened\n");
-					mq_send(msg_queue, temp, MAX_BUFFER_SIZE, 0);
+					mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 				}
+
+			/*	if(strcmp(sensor.task_name,"BEA") == 0)
+				{
+					printf("BEAT\n");
+					//tiva_active++;
+					if(sensor.dg_mode == 0)
+					{
+						strcpy(buffer,"INFO In normal operation\n");
+						mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
+					}
+					else
+					{
+						strcpy(buffer,"WARN Degraded operation\n");
+						mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
+					}
+				}*/
 			}
 
 		}

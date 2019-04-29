@@ -1,4 +1,5 @@
-echo "\n Pin configuration available"
+#!/bin/sh
+    echo "\n Pin configuration available" >> uartconf.txt
     echo "\n UART 4 configuration p9.11 and p9.13"
     sudo config-pin P9.11 uart
     sudo config-pin -q P9.11
