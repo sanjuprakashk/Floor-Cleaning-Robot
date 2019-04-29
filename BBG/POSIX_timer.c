@@ -11,47 +11,7 @@
 *****************************************************************/
 #include "POSIX_timer.h"
 
-/*****************************************************************
-						Global declaration
-*****************************************************************/
-// FIFO file path 
- char * Temp = "/tmp/tmp_to_main";
- char * Lux = "/tmp/lux_to_main";
- char * log_t = "/tmp/log_to_main";
  
-/*****************************************************************
-					POSIX Timer Handler
-*****************************************************************/
-
-void temp_timer_handler(union sigval val)
-{
-	FLAG_READ_TEMP = 1;
-
-	kick_timer(timer_id_temp, Delay_NS);
-}
-
-/*****************************************************************
-					POSIX Timer Handler
-*****************************************************************/
-
-void lux_timer_handler(union sigval val)
-{
-
-	FLAG_READ_LUX = 1;
-
-	kick_timer(timer_id_lux, Delay_NS);
-}
-
-/*****************************************************************
-					POSIX Timer Handler
-*****************************************************************/
-
-void log_timer_handler(union sigval val)
-{
-	FLAG_LOG = 1;
-
-	kick_timer(timer_id_log, Delay_NS);
-}
 
 /*****************************************************************
 					POSIX Timer configuration

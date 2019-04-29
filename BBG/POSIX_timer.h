@@ -24,6 +24,8 @@
 #include <sys/stat.h>
 #include <errno.h>
 
+enum Status{SUCCESS = 0, ERROR = -1, LUX_ERROR = -2, REMOTE_SOCKET_ERROR = -3, LOGGER_ERROR = -4,  TEMP_ERROR = -1000, BRIGHT = 1000, DARK = -1000};
+
 /*****************************************************************
 						Function Protypes
 *****************************************************************/

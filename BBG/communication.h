@@ -6,6 +6,7 @@
 
 #include "uart.h"
 #include "logger.h"
+#include "POSIX_timer.h"
 
 char lux[10];
 char distance[10];

@@ -1,5 +1,8 @@
 #include "communication.h"
 
+timer_t  timer_id_heartbeat;
+
+#define HEART_BEAT_CHECK_PERIOD (900000000)//0.9 s
 
 char *get_lux()
 {
@@ -32,8 +35,31 @@ char *get_mode()
 	return mode;
 }
 
+int tiva_active, tiva_active_prev;
+void beat_timer_handler(union sigval val)
+{
+	char buffer[MAX_BUFFER_SIZE];
+	//restarting the heartbeat timer
+	if(tiva_active <= tiva_active_prev)
+	{
+		printf("TIVA not active\n");
+	}
+
+	tiva_active_prev = tiva_active;
+
+	if((kick_timer(timer_id_heartbeat, HEART_BEAT_CHECK_PERIOD)) == -1)
+	{
+		perror("Error on kicking timer for heartbeat\n");
+	}
+	
+}
+
+
 void *communication_thread_callback()
 {
+	tiva_active = 0;
+
+	tiva_active_prev = 0;
 
 	printf("Inside communication thread\n");
 
@@ -55,6 +81,16 @@ void *communication_thread_callback()
 	char valve_close = '2';
 	char valve_open = '3';
 	char lux_auto = '4';
+
+	if((setup_timer_POSIX(&timer_id_heartbeat,beat_timer_handler)) == -1)
+	{
+		perror("Error on creating timer for heartbeat\n");
+	}
+
+	if((kick_timer(timer_id_heartbeat, HEART_BEAT_CHECK_PERIOD)) == -1)
+	{
+		perror("Error on kicking timer for heartbeat\n");
+	}
 
 	char task[15];
 	if (isOpen4 == 0) {
@@ -83,6 +119,8 @@ void *communication_thread_callback()
 				// usleep(10000);
 			if(uart_receive(uart4,&sensor, sizeof(sensor_struct)) > 0)
 			{
+
+				tiva_active++;
 				if((strcmp(sensor.task_name,"DIST") == 0) && sensor.sensor_data < 30)
 				{
 					pthread_mutex_lock(&lock_res);
