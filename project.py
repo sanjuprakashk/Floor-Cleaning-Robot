@@ -153,6 +153,12 @@ class mywindow(QtWidgets.QDialog):
             mode_string = str(mode_decoded)
             print("mode ", mode_string)
             self.ui.mode.setText(mode_string)
+
+            deg_mode_value = s.recv(10)
+            deg_mode_decoded = deg_mode_value.decode('UTF-8')
+            deg_mode_string = str(deg_mode_decoded)
+            print("deg mode ", deg_mode_string)
+            self.ui.deg_mode.setText(deg_mode_string)
    
 
     
