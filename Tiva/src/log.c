@@ -15,10 +15,11 @@ typedef struct
 {
     char task[5];
     uint32_t time_stamp;
-    float sensor_value;
+    float distance;
+    float lux;
+    uint32_t water;
     int8_t mode_RN;
     int8_t Deg_mode;
-
 
 }send_sensor_data;
 
@@ -83,10 +84,10 @@ void LogTask(void *pvParameters)
 
     for(;;)
     {
-        if(xQueueReceive(myQueue_light, &lux_recv, TIMEOUT_TICKS ) == pdTRUE )
+        if(xQueueReceive(myQueue_light, &lux_recv, 0 ) == pdTRUE )
         {
             strcpy(tx_data.task,"LUX");
-            tx_data.sensor_value = lux_recv;
+            tx_data.lux = lux_recv;
             tx_data.time_stamp = xTaskGetTickCount();
             tx_data.mode_RN = mode;
             tx_data.Deg_mode = DEGRADED_MODE_MANUAL;
@@ -94,10 +95,10 @@ void LogTask(void *pvParameters)
 
         }
 
-        if(xQueueReceive(myQueue_ultra, &distance_recv, TIMEOUT_TICKS ) == pdTRUE )
+        if(xQueueReceive(myQueue_ultra, &distance_recv, 0 ) == pdTRUE )
         {
             strcpy(tx_data.task,"DIST");
-            tx_data.sensor_value = distance_recv;
+            tx_data.distance = distance_recv;
             tx_data.time_stamp = xTaskGetTickCount();
             tx_data.mode_RN = mode;
             tx_data.Deg_mode = DEGRADED_MODE_MANUAL;
@@ -105,10 +106,10 @@ void LogTask(void *pvParameters)
 
         }
 
-        if(xQueueReceive(myQueue_water, &Water_level_recv, TIMEOUT_TICKS ) == pdTRUE )
+        if(xQueueReceive(myQueue_water, &Water_level_recv, 0 ) == pdTRUE )
         {
             strcpy(tx_data.task,"WAT");
-            tx_data.sensor_value = (float)Water_level_recv;
+            tx_data.water = Water_level_recv;
             tx_data.time_stamp = xTaskGetTickCount();
             tx_data.mode_RN = mode;
             tx_data.Deg_mode = DEGRADED_MODE_MANUAL;
@@ -117,27 +118,25 @@ void LogTask(void *pvParameters)
 
         }
 
-        if(xQueueReceive(myQueue_heartbeat, &beat_recv, TIMEOUT_TICKS ) == pdTRUE )
+        if(xQueueReceive(myQueue_heartbeat, &beat_recv, 0 ) == pdTRUE )
         {
-            UARTprintf("BEA\n");
             strcpy(tx_data.task,"BEA");
             tx_data.mode_RN = mode;
             tx_data.Deg_mode = DEGRADED_MODE_MANUAL;
             tx_data.time_stamp = xTaskGetTickCount();
-            tx_data.sensor_value = 0.0;
             UART_send(ptr, sizeof(tx_data));
 
         }
 
 
         memset(log_data_recv,'\0',sizeof(log_data_recv));
-        if(xQueueReceive(myQueue_log, log_data_recv, TIMEOUT_TICKS ) == pdTRUE )
+        if(xQueueReceive(myQueue_log, log_data_recv, 0 ) == pdTRUE )
         {
 
 //            UARTprintf("--> Log  %s\n",log_data_recv);
             if(CN_ACTIVE == pdTRUE)
             {
-                UART_send_log(ptr1, sizeof(log_data_recv)+5);
+                UART_send_log(ptr1, strlen(log_data_recv));
             }
 
 

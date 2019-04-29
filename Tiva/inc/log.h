@@ -18,6 +18,7 @@
 #include "portmacro.h"
 #include "time.h"
 #include "temp.h"
+#include "semphr.h"
 /**********************************************
  *        MACRO
  **********************************************/
@@ -25,24 +26,31 @@
 #define TIMEOUT_TICKS (10)
 #define BUFFER (100)
 
+
+extern SemaphoreHandle_t xSemaphore;
+
 #define LOG_INFO(str) {\
-char temp_buffer[100];\
+xSemaphoreTake(xSemaphore, 0);\
 memset(temp_buffer,'\0',100);\
 sprintf(temp_buffer,"INFO [%d] %s",xTaskGetTickCount(),str);\
 xQueueSendToBack( myQueue_log,( void * ) temp_buffer, QUEUE_TIMEOUT_TICKS ) ;\
+xSemaphoreGive(xSemaphore);\
 }
 
 #define LOG_ERROR(str) {\
-char temp_buffer[100];\
+xSemaphoreTake(xSemaphore, 0);\
 memset(temp_buffer,'\0',100);\
 sprintf(temp_buffer,"ERROR [%d] %s",xTaskGetTickCount(),str);\
 xQueueSendToBack( myQueue_log,( void * ) temp_buffer, QUEUE_TIMEOUT_TICKS ) ;\
+xSemaphoreGive(xSemaphore);\
 }
 
 #define LOG_WARN(str) {\
-char temp_buffer[30];\
+xSemaphoreTake(xSemaphore, 0);\
+memset(temp_buffer,'\0',100);\
 sprintf(temp_buffer,"WARN [%d] %s",xTaskGetTickCount(),str);\
 xQueueSendToBack( myQueue_log,( void * ) temp_buffer, QUEUE_TIMEOUT_TICKS ) ;\
+xSemaphoreGive(xSemaphore);\
 }
 /**********************************************
  *        Global declarations

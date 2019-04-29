@@ -7,6 +7,8 @@ int CN_ACTIVE = 0;
 int8_t BEAT = 1;
 static uint32_t Pulse = 0, Prev_pulse = 0;
 extern uint32_t DEGRADED_MODE_MANUAL;
+char temp_buffer[100];
+
 
 void Control_Node_heartbeat(void *pvParameters)
 {
@@ -55,34 +57,33 @@ void Control_Node_heartbeat(void *pvParameters)
             }
 
             Prev_pulse = Pulse;
-
-
-//          BEAT = 1;
             xQueueSendToBack( myQueue_heartbeat,( void * ) &BEAT, QUEUE_TIMEOUT_TICKS ) ;
 
-
-        }
-        if(CN_ACTIVE)
-        {
-            GPIOPinWrite(CLP_D1_PORT, CLP_D1_PIN, 0);
-            GPIOPinWrite(CLP_D2_PORT, CLP_D2_PIN, 0);
-            GPIOPinWrite(CLP_D3_PORT, CLP_D3_PIN, 0);
-            GPIOPinWrite(CLP_D4_PORT, CLP_D4_PIN, 0);
-
-        }
-        else
-        {
-            GPIOPinWrite(CLP_D1_PORT, CLP_D1_PIN, CLP_D1_PIN);
-            GPIOPinWrite(CLP_D2_PORT, CLP_D2_PIN, CLP_D2_PIN);
-            GPIOPinWrite(CLP_D3_PORT, CLP_D3_PIN, CLP_D3_PIN);
-            GPIOPinWrite(CLP_D4_PORT, CLP_D4_PIN, CLP_D4_PIN);
-
-            if((DEGRADED_MODE_MANUAL == 1))
+            if(CN_ACTIVE)
             {
-                stop();
-                UARTprintf("System shutdown as no ultrasonic sensor and no control node - Fail safe\n");
+                GPIOPinWrite(CLP_D1_PORT, CLP_D1_PIN, 0);
+                GPIOPinWrite(CLP_D2_PORT, CLP_D2_PIN, 0);
+                GPIOPinWrite(CLP_D3_PORT, CLP_D3_PIN, 0);
+                GPIOPinWrite(CLP_D4_PORT, CLP_D4_PIN, 0);
+
             }
+            else
+            {
+                GPIOPinWrite(CLP_D1_PORT, CLP_D1_PIN, CLP_D1_PIN);
+                GPIOPinWrite(CLP_D2_PORT, CLP_D2_PIN, CLP_D2_PIN);
+                GPIOPinWrite(CLP_D3_PORT, CLP_D3_PIN, CLP_D3_PIN);
+                GPIOPinWrite(CLP_D4_PORT, CLP_D4_PIN, CLP_D4_PIN);
+
+                if((DEGRADED_MODE_MANUAL == 1))
+                {
+                    stop();
+                    UARTprintf("System shutdown as no ultrasonic sensor and no control node - Fail safe\n");
+                }
+            }
+
+
         }
+
     }
 
 }

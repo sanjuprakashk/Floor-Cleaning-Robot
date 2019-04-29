@@ -9,6 +9,7 @@
 
 int FLAG_WL = 0;
 static char buffer_log[BUFFER];
+char temp_buffer[100];
 
 void Water_level(void *pvParameters)
 {
@@ -35,7 +36,7 @@ void Water_level(void *pvParameters)
     long x_WaterL_id = 1009;
     xTimerHandle xTimer_WL;
     xTimer_WL = xTimerCreate("Waterlevel_timer",               // Just a text name, not used by the kernel.
-                                pdMS_TO_TICKS( 1000 ),     // 1000ms
+                                pdMS_TO_TICKS( 2000 ),     // 1000ms
                                 pdTRUE,                    // The timers will auto-reload themselves when they expire.
                                 ( void * ) x_WaterL_id,      // Assign each timer a unique id equal to its array index.
                                 vTimerCallback_WaterLevel_handler// Each timer calls the same callback when it expires.
@@ -75,14 +76,6 @@ void Water_level(void *pvParameters)
                  LOG_INFO(buffer_log)
              }
 
-//            char W[50];
-//            memset(W,'\0',50);
-//           sprintf(W,"W %f\n",Water_level_data);
-//           UARTprintf("%s",W);
-
-
-
-
 
             FLAG_WL = pdFALSE;
 
@@ -104,9 +97,13 @@ void init_valve()
 void open_value()
 {
     GPIOPinWrite(GPIO_PORTK_BASE, GPIO_PIN_7, GPIO_PIN_7);
+    UARTprintf("CN: Valve opened\n");
+    LOG_ERROR("Valve opened")
 }
 
 void close_value()
 {
     GPIOPinWrite(GPIO_PORTK_BASE, GPIO_PIN_7, 0);
+    UARTprintf("CN: Valve closed\n");
+    LOG_ERROR("Valve closed")
 }

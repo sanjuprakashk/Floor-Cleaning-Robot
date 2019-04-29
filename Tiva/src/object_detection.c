@@ -21,6 +21,9 @@ uint32_t DEGRADED_MODE_MANUAL = 0;
 SemaphoreHandle_t xSemaphore;
 extern TaskHandle_t handle_motor;
 
+char temp_buffer[100];
+
+
 void init_ultrasonic_sensor()
 {
     SysCtlPeripheralEnable(SYSCTL_PERIPH_TIMER2);
@@ -156,7 +159,7 @@ void UtrasonicTask(void *pvParameters)
                  else
                  {
                      ULT_DEAD++;
-                     UARTprintf("ULT_DEAD - %d\n",ULT_DEAD);
+                     //UARTprintf("ULT_DEAD - %d\n",ULT_DEAD);
                  }
 
                  FLAG_UL = pdFALSE;
@@ -167,6 +170,7 @@ void UtrasonicTask(void *pvParameters)
                 DEGRADED_MODE_MANUAL = 1;
                 mode = 1;
                 UARTprintf("Killed Utrasonic sensor task\n");
+                LOG_INFO("Killed Utrasonic sensor task")
                 vTaskDelete( NULL );
              }
 

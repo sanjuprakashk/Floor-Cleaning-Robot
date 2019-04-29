@@ -16,6 +16,7 @@
 int FLAG_Light = 0;
 struct log_struct_temp log_temp;
 static char buffer_log[BUFFER];
+char temp_buffer[100];
 
 /*for writing and reading as byte from the registers*/
 uint8_t register_data;
@@ -88,14 +89,8 @@ void LightTask(void *pvParameters)
                         UARTprintf("CN INACTIVE, lux < 1, start\n");
                         forward();
                         start_again = 0;
+                        LOG_INFO("Auto on of Robot")
                     }
-//                    char L[50];
-//                     memset(L,'\0',50);
-//                     sprintf(L,"L %f\n",lux_send);
-//                     UARTprintf("%s",L);
-
-
-
 
 
                 }
@@ -170,7 +165,6 @@ void read_lux_CH0()
     CH0 = (MSB_0 << 8);
     CH0 |= LSB_0;
 
-//    UARTprintf("CH0 %d\n",CH0);
 
 }
 
@@ -193,7 +187,6 @@ void read_lux_CH1()
     /*forming the full 16 bit from MSB and LSB*/
     CH1 = (MSB_1 << 8);
     CH1 |= LSB_1;
-//    UARTprintf("CH1 %d\n",CH1);
 
 
 }

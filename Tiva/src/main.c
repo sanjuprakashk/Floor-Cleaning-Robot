@@ -42,8 +42,9 @@
 #include "motor_driver.h"
 #include "heartbeat.h"
 #include "waterlevel.h"
+#include "semphr.h"
 
-
+SemaphoreHandle_t xSemaphore;
 /**********************************************
  *        Function Prototypes
  **********************************************/
@@ -86,6 +87,7 @@ uint8_t STARTUP_FAILED = 0;
 int8_t mode=0; //auto mode on default
 
 extern uint32_t DEGRADED_MODE_MANUAL;
+char temp_buffer[100];
 
 /**********************************************
  *        Globals
@@ -121,6 +123,7 @@ int main(void)
     queue_init();
 
 
+    xSemaphore = xSemaphoreCreateMutex();
 
     ConfigureUART1();
     ConfigureUART2();
@@ -133,6 +136,7 @@ int main(void)
               configMINIMAL_STACK_SIZE, NULL, 1, NULL))
    {
        STARTUP_FAILED = pdTRUE;
+       LOG_ERROR("Thread creation failed for LightTask")
    }
 
     // Create logger task
@@ -140,6 +144,7 @@ int main(void)
                    configMINIMAL_STACK_SIZE, NULL, 1, NULL))
    {
        STARTUP_FAILED = pdTRUE;
+       LOG_ERROR("Thread creation failed for LogTask")
    }
 
 
@@ -150,6 +155,7 @@ int main(void)
         STARTUP_FAILED = pdTRUE;
         DEGRADED_MODE_MANUAL = 1;
         perror("Thread creation failed for UtrasonicTask\n");
+        LOG_ERROR("Thread creation failed for UtrasonicTask")
     }
 
     // Create temp task
@@ -158,6 +164,7 @@ int main(void)
     {
         STARTUP_FAILED = pdTRUE;
         perror("Thread creation failed for ReadUartTask\n");
+        LOG_ERROR("Thread creation failed for ReadUartTask")
     }
 
     if(pdPASS != xTaskCreate(Actuator_motor, (const portCHAR *)"motion",
@@ -165,6 +172,7 @@ int main(void)
     {
         STARTUP_FAILED = pdTRUE;
         perror("Thread creation failed for Actuator_motor\n");
+        LOG_ERROR("Thread creation failed for Actuator_motor")
     }
 
     if(pdPASS != xTaskCreate(Control_Node_heartbeat, (const portCHAR *)"heartbeat",
@@ -172,6 +180,7 @@ int main(void)
     {
         STARTUP_FAILED = pdTRUE;
         perror("Thread creation failed for Control_Node_heartbeat\n");
+        LOG_ERROR("Thread creation failed for Control_Node_heartbeat")
     }
 
     if(pdPASS != xTaskCreate(Water_level, (const portCHAR *)"waterlevel",
@@ -179,6 +188,7 @@ int main(void)
     {
         STARTUP_FAILED = pdTRUE;
         perror("Thread creation failed for Water_level\n");
+        LOG_ERROR("Thread creation failed for Water_level")
     }
 
 
@@ -216,26 +226,24 @@ void ReadUartTask(void *pvParameters)
 
                 else if((c == '1') && (mode == 0) && (DEGRADED_MODE_MANUAL == 0))//object detected in auto mode
                 {
-                    UARTprintf("CN: Object detected %c\n", c);
                     xTaskNotifyGive(handle_motor);
                 }
 
                 else if(c == '2')//Water level low
                 {
                     close_value();
-                    UARTprintf("CN: Valve closed\n");
                 }
 
                 else if(c == '3')//Water level high
                 {
                     open_value();
-                    UARTprintf("CN: Valve opened\n");
                 }
                 else if(c == '4')//auto start - lux
                 {
                     if((start_again == 1) && (mode == 0) && (DEGRADED_MODE_MANUAL == 0))
                     {
                         UARTprintf("CN: Auto on of robot\n");
+                        LOG_INFO("Auto on of robot")
                         forward();
                         start_again = 0;
                     }
@@ -280,7 +288,7 @@ void ReadUartTask(void *pvParameters)
                     {
                         left();
                         UARTprintf("CN: left\n");
-                        vTaskDelay(1000/portTICK_PERIOD_MS);
+                        vTaskDelay(300/portTICK_PERIOD_MS);
                         stop();
 
                     }
@@ -292,7 +300,7 @@ void ReadUartTask(void *pvParameters)
                     {
                         right();
                         UARTprintf("CN: right\n");
-                        vTaskDelay(1000/portTICK_PERIOD_MS);
+                        vTaskDelay(300/portTICK_PERIOD_MS);
                         stop();
 
                     }
@@ -314,7 +322,7 @@ void ReadUartTask(void *pvParameters)
                     {
                         mode = 0 ;
                         forward();
-                        UARTprintf("CN: force on\n");
+                        UARTprintf("CN: force turn on\n");
                     }
 
                 }
@@ -323,18 +331,6 @@ void ReadUartTask(void *pvParameters)
 
 }
 
-
-void Actuator_night(void *pvParameters)
-{
-        uint32_t ulNotifiedValue = 0;
-
-        ulNotifiedValue  = ulTaskNotifyTake( pdTRUE, 0  );
-        if(ulNotifiedValue > 0)
-        {
-            UARTprintf("on the robot\n");
-        }
-
-}
 
 void Actuator_motor(void *pvParameters)
 {
@@ -349,6 +345,7 @@ void Actuator_motor(void *pvParameters)
             {
 
                 UARTprintf("Object detected notified\n");
+                LOG_INFO("Object detected")
                 //object detected
                 backward();
 
