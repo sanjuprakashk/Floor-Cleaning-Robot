@@ -43,12 +43,12 @@ void beat_timer_handler(union sigval val)
 	if(tiva_active <= tiva_active_prev)
 	{
 		printf("ERROR Tiva dead\n");
-		strcpy(buffer,"ERROR Tiva dead");
+		strcpy(buffer,"ERROR Tiva dead\n");
 		mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 	}
 	else
 	{
-		strcpy(buffer,"INFO Tiva alive");
+		strcpy(buffer,"INFO Tiva alive\n");
 		mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 		printf("INFO Tiva alive\n");
 	}

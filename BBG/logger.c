@@ -19,7 +19,7 @@ void logger_init()
 
     /* Setting the message queue attributes */
     mq_attributes.mq_flags = 0;
-    mq_attributes.mq_maxmsg = 10;
+    mq_attributes.mq_maxmsg = 5;
     mq_attributes.mq_msgsize = MAX_BUFFER_SIZE;
     mq_attributes.mq_curmsgs = 0;
 
