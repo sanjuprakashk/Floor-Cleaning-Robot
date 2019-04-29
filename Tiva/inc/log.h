@@ -11,13 +11,13 @@
 /**********************************************
  *        Includes
  **********************************************/
+#include <lux.h>
 #include "FreeRTOS.h"
 #include "queue.h"
 #include "portmacro.h"
 #include "utils/uartstdio.h"
 #include "portmacro.h"
 #include "time.h"
-#include "temp.h"
 #include "semphr.h"
 /**********************************************
  *        MACRO

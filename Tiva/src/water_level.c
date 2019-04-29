@@ -53,6 +53,23 @@ void Water_level(void *pvParameters)
     /*start the timer*/
     xTimerStart( xTimer_WL, 0 );
 
+
+    ADCProcessorTrigger(ADC0_BASE, 3);
+
+
+    while(!ADCIntStatus(ADC0_BASE, 3, false))
+       {
+       }
+    ADCIntClear(ADC0_BASE, 3);
+
+    ADCSequenceDataGet(ADC0_BASE, 3, &Water_level_data);
+
+    if(Water_level_data > 3000)
+    {
+        UARTprintf("Startup test failed for water level sensor WL %d\n", Water_level_data);
+         LOG_ERROR("Killed water level sensor task - Startup failed\n")
+         vTaskDelete( NULL );
+    }
     while(1)
     {
         if(FLAG_WL)

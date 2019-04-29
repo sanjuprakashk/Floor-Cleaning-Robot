@@ -32,7 +32,6 @@
 #include "driverlib/gpio.h"
 #include "driverlib/inc/hw_memmap.h"
 #include "log.h"
-#include "temp.h"
 #include "spi.h"
 #include "object_detection.h"
 #include "uart.h"
@@ -136,7 +135,7 @@ int main(void)
               configMINIMAL_STACK_SIZE, NULL, 1, NULL))
    {
        STARTUP_FAILED = pdTRUE;
-       LOG_ERROR("Thread creation failed for LightTask")
+       LOG_ERROR("Thread creation failed for LightTask\n")
    }
 
     // Create logger task
@@ -144,7 +143,7 @@ int main(void)
                    configMINIMAL_STACK_SIZE, NULL, 1, NULL))
    {
        STARTUP_FAILED = pdTRUE;
-       LOG_ERROR("Thread creation failed for LogTask")
+       LOG_ERROR("Thread creation failed for LogTask\n")
    }
 
 
@@ -155,7 +154,7 @@ int main(void)
         STARTUP_FAILED = pdTRUE;
         DEGRADED_MODE_MANUAL = 1;
         perror("Thread creation failed for UtrasonicTask\n");
-        LOG_ERROR("Thread creation failed for UtrasonicTask")
+        LOG_ERROR("Thread creation failed for UtrasonicTask\n")
     }
 
     // Create temp task
@@ -164,7 +163,7 @@ int main(void)
     {
         STARTUP_FAILED = pdTRUE;
         perror("Thread creation failed for ReadUartTask\n");
-        LOG_ERROR("Thread creation failed for ReadUartTask")
+        LOG_ERROR("Thread creation failed for ReadUartTask\n")
     }
 
     if(pdPASS != xTaskCreate(Actuator_motor, (const portCHAR *)"motion",
@@ -172,7 +171,7 @@ int main(void)
     {
         STARTUP_FAILED = pdTRUE;
         perror("Thread creation failed for Actuator_motor\n");
-        LOG_ERROR("Thread creation failed for Actuator_motor")
+        LOG_ERROR("Thread creation failed for Actuator_motor\n")
     }
 
     if(pdPASS != xTaskCreate(Control_Node_heartbeat, (const portCHAR *)"heartbeat",
@@ -180,7 +179,7 @@ int main(void)
     {
         STARTUP_FAILED = pdTRUE;
         perror("Thread creation failed for Control_Node_heartbeat\n");
-        LOG_ERROR("Thread creation failed for Control_Node_heartbeat")
+        LOG_ERROR("Thread creation failed for Control_Node_heartbeat\n")
     }
 
     if(pdPASS != xTaskCreate(Water_level, (const portCHAR *)"waterlevel",
@@ -188,9 +187,13 @@ int main(void)
     {
         STARTUP_FAILED = pdTRUE;
         perror("Thread creation failed for Water_level\n");
-        LOG_ERROR("Thread creation failed for Water_level")
+        LOG_ERROR("Thread creation failed for Water_level\n")
     }
 
+    if(STARTUP_FAILED == pdTRUE)
+    {
+        LOG_ERROR("Startup test failed in creating tasks\n")
+    }
 
 //    if(pdPASS != xTaskCreate(startup_and_runtime_fault_detection, (const portCHAR *)"fault",
 //                                                  configMINIMAL_STACK_SIZE, NULL, 1, NULL))
@@ -355,7 +358,7 @@ void Actuator_motor(void *pvParameters)
                 //normal run of motors
                 right();
 
-                vTaskDelay(1000/portTICK_PERIOD_MS);
+                vTaskDelay(500/portTICK_PERIOD_MS);
 
                 forward();
 
