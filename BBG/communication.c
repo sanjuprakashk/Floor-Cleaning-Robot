@@ -101,6 +101,8 @@ void *communication_thread_callback()
 	char valve_open = '3';
 	char lux_auto = '4';
 
+	int recv = 0;
+
 	if((setup_timer_POSIX(&timer_id_heartbeat,beat_timer_handler)) == -1)
 	{
 		perror("Error on creating timer for heartbeat\n");
@@ -137,7 +139,10 @@ void *communication_thread_callback()
 
 				// usleep(10000);
 			//sensor.sensor_data = 0;
-			if(uart_receive(uart4,&sensor, sizeof(sensor_struct)) > 0)
+			//pthread_mutex_lock(&lock_res);
+			recv = uart_receive(uart4,&sensor, sizeof(sensor_struct)); 
+			//pthread_mutex_unlock(&lock_res);
+			if(recv > 0)
 			{
 
 				//tiva_active++;
@@ -146,7 +151,7 @@ void *communication_thread_callback()
 					pthread_mutex_lock(&lock_res);
 					uart_send(uart2, &obj_detect, sizeof(char));
 					pthread_mutex_unlock(&lock_res);
-					printf("OBJ DETECTED = %f\n",sensor.sensor_data);
+					printf("OBJ DETECTED = %f\n",sensor.distance);
 					strcpy(buffer,"WARN Objected detected\n");
 					mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 				}
@@ -167,8 +172,9 @@ void *communication_thread_callback()
 					pthread_mutex_unlock(&lock_res);
 					already_closed = 1;
 					already_open = 0;
-					strcpy(buffer,"WARN Valve closed\n");
-					mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
+					printf("ERROR Valve closed = %f\n", comm_rec.waterLevel);
+					//strcpy(buffer,"WARN Valve closed\n");
+					//mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 				}
 			
 
@@ -179,8 +185,9 @@ void *communication_thread_callback()
 					pthread_mutex_unlock(&lock_res);
 					already_open = 1;
 					already_closed = 0;
-					strcpy(buffer,"WARN Valve Opened\n");
-					mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
+					printf("ERROR Valve opened = %f\n", comm_rec.waterLevel);
+					//strcpy(buffer,"WARN Valve closed\n");
+					//mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 				}
 
 				else if(strcmp(sensor.task_name,"BEA") == 0)
@@ -189,13 +196,13 @@ void *communication_thread_callback()
 					tiva_active++;
 					if(sensor.dg_mode == 0)
 					{
-						strcpy(buffer,"INFO In normal operation\n");
-						mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
+					//	strcpy(buffer,"INFO In normal operation\n");
+					//	mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 					}
 					else
 					{
-						strcpy(buffer,"WARN Degraded operation\n");
-						mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
+					//	strcpy(buffer,"WARN Degraded operation\n");
+					//	mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 					}
 				}
 			}

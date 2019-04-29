@@ -16,7 +16,9 @@ typedef struct sensor_struct
     char task_name[5];
     uint32_t timeStamp;
 
-    float sensor_data;
+    float distance;
+    float lux;
+    uint32_t water;
     int8_t mode;
     int8_t dg_mode;
 }sensor_struct;

@@ -86,34 +86,34 @@ int8_t uart_receive(uart_properties *uart, void *rx_r, int length) {
 		return -1;
 	}
 
-//	printf("Size of read = %d \t\t Size of length = %d\n", count, length);
+	//comm_rec.waterLevel = 0;
 	rx = rx_r;
-	
+
 	if(strcmp(rx->task_name,"DIST") == 0)
 	{
 	//	struct sensor_struct *rx = rx_r;
 		//printf("[%d] DIST = %f\t Mode = %d\n",rx->timeStamp, rx->sensor_data, rx->mode);
-		comm_rec.distance = rx->sensor_data;
+		comm_rec.distance = rx->distance;
 
-	comm_rec.mode = rx->mode;
+		comm_rec.mode = rx->mode;
 		
 	}
 
 	else if(strcmp(rx->task_name,"LUX") == 0)
 	{
 		//printf("[%d] LUX = %f\t Mode = %d\n",rx->timeStamp, rx->sensor_data, rx->mode);
-		comm_rec.lux = rx->sensor_data;
+		comm_rec.lux = rx->lux;
 
-	comm_rec.mode = rx->mode;
+		comm_rec.mode = rx->mode;
 
 	}
 	
 	else if(strcmp(rx->task_name,"WAT") == 0)
 	{
-		//printf("[%d] WATER LEVEL = %f\t Mode = %d\n",rx->timeStamp, rx->sensor_data, rx->mode);
-		comm_rec.waterLevel = rx->sensor_data;
-
-	comm_rec.mode = rx->mode;
+	//	printf("[%d] WATER LEVEL = %f\t Mode = %d\n",rx->timeStamp, rx->sensor_data, rx->mode);
+		comm_rec.waterLevel = rx->water;
+	//	printf("%f water level comm_rec\n", comm_rec.waterLevel);
+		comm_rec.mode = rx->mode;
 	}
 
 	else if(strcmp(rx->task_name,"BEA") == 0)

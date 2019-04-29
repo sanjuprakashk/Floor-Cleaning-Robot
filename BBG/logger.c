@@ -33,11 +33,11 @@ void *logger_thread_callback()
 	printf("Inside logger thread\n");
 	
 	
-	file_ptr = fopen("/home/debian/Floor-Cleaning-Robot/BBG/test.txt", "a+");
+	file_ptr = fopen("test.txt", "a+");
 	while(1)
 	{
 
-		if(mq_receive(msg_queue, buffer, MAX_BUFFER_SIZE, 0) > 0)
+		if(mq_receive(msg_queue, buffer,MAX_BUFFER_SIZE,0) > 0)
 	 	{
 	 		pthread_mutex_lock(&lock);
 	 		fprintf(file_ptr,"%s",buffer);
