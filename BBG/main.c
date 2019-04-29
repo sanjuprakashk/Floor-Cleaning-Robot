@@ -9,6 +9,7 @@
 #include "heartbeat.h"
 #include "log_receiver.h"
 
+timer_t  timer_id_heartbeat;
 pthread_mutex_t lock_res;
 
 int main()
@@ -23,6 +24,7 @@ int main()
         perror("Mutex init failed\n"); 
         return -1; 
     }
+
 
 	if(pthread_create(&remote_request_thread, &attr, remote_request_callback, NULL) != 0)
 	{
@@ -51,7 +53,16 @@ int main()
 
 	printf("Threads created successfully\n");
 
-	
+	if((setup_timer_POSIX(&timer_id_heartbeat,beat_timer_handler)) == ERROR)
+	{
+		perror("Error on creating timer for heartbeat\n");
+	}
+
+	if((kick_timer(timer_id_heartbeat, HEART_BEAT_CHECK_PERIOD)) == ERROR)
+	{
+		perror("Error on kicking timer for heartbeat\n");
+	}
+
 	pthread_join(communication_thread,NULL);
 	pthread_join(logger_thread,NULL);
 	pthread_join(log_receiver_thread,NULL);	

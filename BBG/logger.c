@@ -33,7 +33,7 @@ void *logger_thread_callback()
 	printf("Inside logger thread\n");
 	
 	
-	file_ptr = fopen("test.txt", "a+");
+	file_ptr = fopen("/home/debian/Floor-Cleaning-Robot/BBG/test.txt", "a+");
 	while(1)
 	{
 
