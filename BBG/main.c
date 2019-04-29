@@ -9,6 +9,7 @@
 #include "heartbeat.h"
 #include "log_receiver.h"
 
+
 pthread_mutex_t lock_res;
 
 int main()
@@ -23,6 +24,7 @@ int main()
         perror("Mutex init failed\n"); 
         return -1; 
     }
+
 
 	if(pthread_create(&remote_request_thread, &attr, remote_request_callback, NULL) != 0)
 	{
@@ -51,7 +53,6 @@ int main()
 
 	printf("Threads created successfully\n");
 
-	
 	pthread_join(communication_thread,NULL);
 	pthread_join(logger_thread,NULL);
 	pthread_join(log_receiver_thread,NULL);	

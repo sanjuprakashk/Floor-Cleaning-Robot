@@ -133,12 +133,13 @@ void *remote_request_callback()
         memset(buffer,'\0',sizeof(buffer));
         while(recv(new_socket, buffer ,10, 0) > 0)
         {
-
-          //printf("Received request %s - %ld\n",buffer,strlen(buffer));
+	
+	 
+         // printf("Received request %s - %ld\n",buffer,strlen(buffer));
 
          if(strcmp(buffer,"display")==0)
          {
-          printf("Received request for display\n");
+          //printf("Received request for display\n");
 
           strcpy(lux_send, get_lux());
           send(new_socket, lux, 10 , 0);
@@ -164,6 +165,7 @@ void *remote_request_callback()
 
         else if(strcmp(buffer,"auto")==0)
         {
+	  printf("AUTO\n");
                 //send a to tiva
           pthread_mutex_lock(&lock_res);
           uart_send(uart2, &automatic, sizeof(char));
@@ -211,8 +213,9 @@ void *remote_request_callback()
           pthread_mutex_unlock(&lock_res);
         }
 
-        else if((strcmp(buffer, "on") == 0) && auto_enable == 1)
+        if(strcmp(buffer, "on") == 0) 
         {
+          printf("ON RECEIVED\n");
           //send o to tiva
           pthread_mutex_lock(&lock_res);
           uart_send(uart2, &clean, sizeof(char));

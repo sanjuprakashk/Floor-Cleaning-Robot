@@ -19,7 +19,7 @@ void logger_init()
 
     /* Setting the message queue attributes */
     mq_attributes.mq_flags = 0;
-    mq_attributes.mq_maxmsg = 10;
+    mq_attributes.mq_maxmsg = 5;
     mq_attributes.mq_msgsize = MAX_BUFFER_SIZE;
     mq_attributes.mq_curmsgs = 0;
 
@@ -33,7 +33,7 @@ void *logger_thread_callback()
 	printf("Inside logger thread\n");
 	
 	
-	file_ptr = fopen("test.txt", "a+");
+	file_ptr = fopen("/home/debian/Floor-Cleaning-Robot/BBG/test.txt", "a+");
 	while(1)
 	{
 

@@ -10,7 +10,7 @@ void *revecive_thread_callback()
 
 	uint8_t isOpen1 = uart_config(uart1);
 	
-	char log[15];
+	char log[50];
 	char b = 's';
 
 	while(1)

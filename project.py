@@ -131,31 +131,29 @@ class mywindow(QtWidgets.QDialog):
             s.sendall(b'display')
 
             lux_value = s.recv(10)
-            lux_string = str(lux_value)
-            lux_string.replace('\x00',' ')
+            lux_decoded = lux_value.decode('UTF-8')
+            lux_string = str(lux_decoded)
             print("lux value ", lux_string)
             self.ui.lux.setText(lux_string)
 
             motion_value = s.recv(10)
-            motion_string = str(motion_value)
-            motion_string.replace('\x00',' ')
-            print("motion_value ", motion_string)
+            motion_decoded = motion_value.decode('UTF-8')
+            motion_string = str(motion_decoded)
+            print("lux value ", motion_string)
             self.ui.motion.setText(motion_string)
             
             water_value = s.recv(10)
-            water_string = str(water_value)
-            water_string.replace('\x00',' ')
-            print("water_value ", water_value)
+            water_decoded = water_value.decode('UTF-8')
+            water_string = str(water_decoded)
+            print("water level ", water_string)
             self.ui.water.setText(water_string)
 
             mode_value = s.recv(10)
-            mode_string = str(mode_value)
-            mode_string.replace('\x00',' ')
-            print("mode ",mode_string)
+            mode_decoded = mode_value.decode('UTF-8')
+            mode_string = str(mode_decoded)
+            print("mode ", mode_string)
             self.ui.mode.setText(mode_string)
-
-
-    
+   
 
     
   
