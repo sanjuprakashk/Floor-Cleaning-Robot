@@ -208,6 +208,7 @@ void ReadUartTask(void *pvParameters)
             while(UARTCharsAvail(UART1_BASE))
             {
                 char c = ROM_UARTCharGet(UART1_BASE);
+                UARTprintf("-> %c\n",c);
                 if(c == 'h') //heartbeat
                 {
                     xTaskNotifyGive(handle_heartbeat);
@@ -327,7 +328,7 @@ void Actuator_night(void *pvParameters)
 {
         uint32_t ulNotifiedValue = 0;
 
-        ulNotifiedValue  = ulTaskNotifyTake( pdTRUE, 1000  );
+        ulNotifiedValue  = ulTaskNotifyTake( pdTRUE, 0  );
         if(ulNotifiedValue > 0)
         {
             UARTprintf("on the robot\n");
@@ -343,7 +344,7 @@ void Actuator_motor(void *pvParameters)
 
             uint32_t ulNotifiedValue = 0;
 
-            ulNotifiedValue  = ulTaskNotifyTake( pdTRUE, 1  );
+            ulNotifiedValue  = ulTaskNotifyTake( pdTRUE, 0  );
             if(ulNotifiedValue > 0)
             {
 

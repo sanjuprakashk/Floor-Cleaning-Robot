@@ -57,11 +57,11 @@ void queue_init()
         UARTprintf("error on queue creation myQueue_ultra\n");
     }
 
-//    myQueue_heartbeat = xQueueCreate(QueueLength, sizeof(int8_t));
-//    if(myQueue_heartbeat == NULL)
-//    {
-//        UARTprintf("error on queue creation myQueue_heartbeat\n");
-//    }
+    myQueue_heartbeat = xQueueCreate(QueueLength, sizeof(int8_t));
+    if(myQueue_heartbeat == NULL)
+    {
+        UARTprintf("error on queue creation myQueue_heartbeat\n");
+    }
 
 }
 
@@ -117,17 +117,17 @@ void LogTask(void *pvParameters)
 
         }
 
-//        if(xQueueReceive(myQueue_heartbeat, &beat_recv, TIMEOUT_TICKS ) == pdTRUE )
-//        {
-//            UARTprintf("BEA\n");
-//            strcpy(tx_data.task,"BEA");
-//            tx_data.mode_RN = mode;
-//            tx_data.Deg_mode = DEGRADED_MODE_MANUAL;
-//            tx_data.time_stamp = xTaskGetTickCount();
-//            tx_data.sensor_value = 0.0;
-//            UART_send(ptr, sizeof(tx_data));
-//
-//        }
+        if(xQueueReceive(myQueue_heartbeat, &beat_recv, TIMEOUT_TICKS ) == pdTRUE )
+        {
+            UARTprintf("BEA\n");
+            strcpy(tx_data.task,"BEA");
+            tx_data.mode_RN = mode;
+            tx_data.Deg_mode = DEGRADED_MODE_MANUAL;
+            tx_data.time_stamp = xTaskGetTickCount();
+            tx_data.sensor_value = 0.0;
+            UART_send(ptr, sizeof(tx_data));
+
+        }
 
 
         memset(log_data_recv,'\0',sizeof(log_data_recv));

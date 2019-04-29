@@ -98,7 +98,7 @@ void UtrasonicTask(void *pvParameters)
     long x_ultra_id = 1003;
     xTimerHandle xTimer_ult;
     xTimer_ult = xTimerCreate("Timer_ultrasonic",               // Just a text name, not used by the kernel.
-                                pdMS_TO_TICKS( 500 ),     // 1000ms
+                                pdMS_TO_TICKS( 530 ),     // 1000ms
                                 pdTRUE,                    // The timers will auto-reload themselves when they expire.
                                 ( void * ) x_ultra_id,      // Assign each timer a unique id equal to its array index.
                                 vTimerCallback_Ultra_handler// Each timer calls the same callback when it expires.
