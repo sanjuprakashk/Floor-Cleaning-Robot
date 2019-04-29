@@ -32,6 +32,8 @@
 #include "driverlib/fpu.h"
 #include "log.h"
 #include "motor_driver.h"
+#include "semphr.h"
+
 void init_ultrasonic_sensor();
 void PortFIntHandler();
 void find_object();

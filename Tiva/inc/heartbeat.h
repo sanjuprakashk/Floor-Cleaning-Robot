@@ -32,8 +32,11 @@
 #include "driverlib/fpu.h"
 #include "driverlib/gpio.h"
 #include "drivers/pinout.h"
+
+#include "motor_driver.h"
+
 void Control_Node_heartbeat(void *pvParameters);
 void vTimerCallback_HB_handler( TimerHandle_t  *pxTimer );
-
+extern QueueHandle_t myQueue_heartbeat;
 #endif /* INC_HEARTBEAT_H_ */
 

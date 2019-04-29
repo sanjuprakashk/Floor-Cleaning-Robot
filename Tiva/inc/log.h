@@ -47,7 +47,7 @@ xQueueSendToBack( myQueue_log,( void * ) temp_buffer, QUEUE_TIMEOUT_TICKS ) ;\
 /**********************************************
  *        Global declarations
  **********************************************/
-extern QueueHandle_t myQueue_light, myQueue_ultra, myQueue_log, myQueue_water;
+extern QueueHandle_t myQueue_light, myQueue_ultra, myQueue_log, myQueue_water, myQueue_heartbeat;
 extern int CN_ACTIVE ;
 extern int8_t mode;
 

@@ -42,6 +42,8 @@
 #include "motor_driver.h"
 #include "heartbeat.h"
 #include "waterlevel.h"
+
+
 /**********************************************
  *        Function Prototypes
  **********************************************/
@@ -69,17 +71,22 @@ void Actuator_night(void *pvParameters);
 /**********************************************
  *        Globals
  **********************************************/
-QueueHandle_t myQueue_ultra, myQueue_light, myQueue_log, myQueue_water;
+QueueHandle_t myQueue_ultra, myQueue_light, myQueue_log, myQueue_water, myQueue_heartbeat;
 
 struct log_struct_led log_led;
 uint32_t output_clock_rate_hz;
 
 //For temperature notification
-TaskHandle_t handle_hot_h2o,handle_motor,handle_night,handle_heartbeat;
+TaskHandle_t handle_motor,handle_night,handle_heartbeat;
 
 static uint8_t start_again = 1;
 
+uint8_t STARTUP_FAILED = 0;
+
 int8_t mode=0; //auto mode on default
+
+extern uint32_t DEGRADED_MODE_MANUAL;
+
 /**********************************************
  *        Globals
  **********************************************/
@@ -92,11 +99,6 @@ TaskHandle_t handle;
 /**********************************************
  *        Main Function
  **********************************************/
-
-
-
-
-
 int main(void)
 {
 
@@ -127,38 +129,72 @@ int main(void)
 
 
     // Create light task
-   xTaskCreate(LightTask, (const portCHAR *)"Light",
-              configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+   if(pdPASS != xTaskCreate(LightTask, (const portCHAR *)"Light",
+              configMINIMAL_STACK_SIZE, NULL, 1, NULL))
+   {
+       STARTUP_FAILED = pdTRUE;
+   }
 
     // Create logger task
-    xTaskCreate(LogTask, (const portCHAR *)"Log",
-                   configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+    if(pdPASS != xTaskCreate(LogTask, (const portCHAR *)"Log",
+                   configMINIMAL_STACK_SIZE, NULL, 1, NULL))
+   {
+       STARTUP_FAILED = pdTRUE;
+   }
 
 
     // Create temp task
-    xTaskCreate(UtrasonicTask, (const portCHAR *)"ultrasonic",
-                       configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+    if(pdPASS != xTaskCreate(UtrasonicTask, (const portCHAR *)"ultrasonic",
+                       configMINIMAL_STACK_SIZE, NULL, 1, NULL))
+    {
+        STARTUP_FAILED = pdTRUE;
+        DEGRADED_MODE_MANUAL = 1;
+        perror("Thread creation failed for UtrasonicTask\n");
+    }
 
     // Create temp task
-       xTaskCreate(ReadUartTask, (const portCHAR *)"UART",
-                          configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+    if(pdPASS != xTaskCreate(ReadUartTask, (const portCHAR *)"UART",
+                          configMINIMAL_STACK_SIZE, NULL, 1, NULL))
+    {
+        STARTUP_FAILED = pdTRUE;
+        perror("Thread creation failed for ReadUartTask\n");
+    }
 
-      xTaskCreate(Actuator_motor, (const portCHAR *)"motion",
-                                 configMINIMAL_STACK_SIZE, NULL, 1, &handle_motor);
+    if(pdPASS != xTaskCreate(Actuator_motor, (const portCHAR *)"motion",
+                                 configMINIMAL_STACK_SIZE, NULL, 1, &handle_motor))
+    {
+        STARTUP_FAILED = pdTRUE;
+        perror("Thread creation failed for Actuator_motor\n");
+    }
 
-       xTaskCreate(Control_Node_heartbeat, (const portCHAR *)"heartbeat",
-                                       configMINIMAL_STACK_SIZE, NULL, 1, &handle_heartbeat);
+    if(pdPASS != xTaskCreate(Control_Node_heartbeat, (const portCHAR *)"heartbeat",
+                                       configMINIMAL_STACK_SIZE, NULL, 1, &handle_heartbeat))
+    {
+        STARTUP_FAILED = pdTRUE;
+        perror("Thread creation failed for Control_Node_heartbeat\n");
+    }
 
-      xTaskCreate(Water_level, (const portCHAR *)"waterlevel",
-                                              configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+    if(pdPASS != xTaskCreate(Water_level, (const portCHAR *)"waterlevel",
+                                              configMINIMAL_STACK_SIZE, NULL, 1, NULL))
+    {
+        STARTUP_FAILED = pdTRUE;
+        perror("Thread creation failed for Water_level\n");
+    }
 
-       //xTaskCreate(Actuator_night, (const portCHAR *)"auto_on",
-             //                           configMINIMAL_STACK_SIZE, NULL, 1, &handle_night);
 
+//    if(pdPASS != xTaskCreate(startup_and_runtime_fault_detection, (const portCHAR *)"fault",
+//                                                  configMINIMAL_STACK_SIZE, NULL, 1, NULL))
+//    {
+//        STARTUP_FAILED = pdTRUE;
+//        perror("Thread creation failed for fault\n");
+//    }
 
 
     /*start the schedule*/
     vTaskStartScheduler();
+
+
+
 
     return 0;
 
@@ -177,7 +213,7 @@ void ReadUartTask(void *pvParameters)
                     xTaskNotifyGive(handle_heartbeat);
                 }
 
-                else if((c == '1') && (mode == 0))//object detected in auto mode
+                else if((c == '1') && (mode == 0) && (DEGRADED_MODE_MANUAL == 0))//object detected in auto mode
                 {
                     UARTprintf("CN: Object detected %c\n", c);
                     xTaskNotifyGive(handle_motor);
@@ -196,7 +232,7 @@ void ReadUartTask(void *pvParameters)
                 }
                 else if(c == '4')//auto start - lux
                 {
-                    if((start_again == 1) && (mode == 0))
+                    if((start_again == 1) && (mode == 0) && (DEGRADED_MODE_MANUAL == 0))
                     {
                         UARTprintf("CN: Auto on of robot\n");
                         forward();
@@ -213,8 +249,12 @@ void ReadUartTask(void *pvParameters)
                 }
                 else if(c == 'a') //auto mode
                 {
-                    UARTprintf("CN: Auto mode\n");
-                    mode = 0 ;
+                    if((DEGRADED_MODE_MANUAL == 0))
+                    {
+                        UARTprintf("CN: Auto mode\n");
+                        mode = 0 ;
+                    }
+
                 }
 
                 else if(c == 'u') //forward
@@ -269,9 +309,12 @@ void ReadUartTask(void *pvParameters)
                 }
                 else if(c == 'o') //force start
                 {
-                    mode = 0 ;
-                    forward();
-                    UARTprintf("CN: force on\n");
+                    if((DEGRADED_MODE_MANUAL == 0))
+                    {
+                        mode = 0 ;
+                        forward();
+                        UARTprintf("CN: force on\n");
+                    }
 
                 }
             }
@@ -297,6 +340,7 @@ void Actuator_motor(void *pvParameters)
 
         for(;;)
         {
+
             uint32_t ulNotifiedValue = 0;
 
             ulNotifiedValue  = ulTaskNotifyTake( pdTRUE, 1  );

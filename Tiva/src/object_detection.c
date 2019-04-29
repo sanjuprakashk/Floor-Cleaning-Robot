@@ -16,6 +16,10 @@ uint32_t FLAG_UL, conv_complete = 0;
 float time_pulse = 0;
 float distance_send;
 static char buffer_log[BUFFER];
+uint32_t ULT_DEAD = 0;
+uint32_t DEGRADED_MODE_MANUAL = 0;
+SemaphoreHandle_t xSemaphore;
+extern TaskHandle_t handle_motor;
 
 void init_ultrasonic_sensor()
 {
@@ -72,8 +76,6 @@ void PortFIntHandler()
             HWREG(TIMER2_BASE + TIMER_O_TAV) = 0;
             TimerEnable(TIMER2_BASE,TIMER_A);
             start = TimerValueGet(TIMER2_BASE,TIMER_A);
-            conv_complete = 0;
-
         }
 
         else
@@ -116,8 +118,6 @@ void UtrasonicTask(void *pvParameters)
         /*start the timer*/
          xTimerStart( xTimer_ult, 0 );
 
-
-         //setup i2c
          init_ultrasonic_sensor();
 
 
@@ -131,10 +131,6 @@ void UtrasonicTask(void *pvParameters)
                  if((conv_complete == 1))
                  {
                      distance_send = (((float)(1.0/(output_clock_rate_hz/1000000))*time_pulse)/58);
-//                     char D[50];
-//                     memset(D,'\0',50);
-//                     sprintf(D,"D %f\n",distance_send);
-//                     UARTprintf("%s",D);
 
                      if(CN_ACTIVE)
                      {
@@ -147,27 +143,31 @@ void UtrasonicTask(void *pvParameters)
                      {
                          if(distance_send < 30)
                          {
-                             UARTprintf("Object detected\n");
 
-                             //object detected
-                             backward();
+                             xTaskNotifyGive(handle_motor);
 
-                             vTaskDelay(1000/portTICK_PERIOD_MS);
 
-                             //normal run of motors
-                            right();
-
-                            vTaskDelay(1000/portTICK_PERIOD_MS);
-
-                            forward();
                          }
 
                      }
+                     conv_complete = 0;
 
+                 }
+                 else
+                 {
+                     ULT_DEAD++;
+                     UARTprintf("ULT_DEAD - %d\n",ULT_DEAD);
                  }
 
                  FLAG_UL = pdFALSE;
 
+             }
+             if(ULT_DEAD > 5)
+             {
+                DEGRADED_MODE_MANUAL = 1;
+                mode = 1;
+                UARTprintf("Killed Utrasonic sensor task\n");
+                vTaskDelete( NULL );
              }
 
 
