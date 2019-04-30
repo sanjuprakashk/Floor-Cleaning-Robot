@@ -52,3 +52,6 @@ Get distance value, lux value, water level value
 Get sensor alive/dead status messages  
 Get Tiva board alive/dead status message  
 Get valve open/closed status message
+
+Tiva includes - https://rawcdn.githack.com/steveantony5/Floor-Cleaning-Robot/775f34e1458c684fa940017b1a8e5687709b8e34/documentation/Tiva/html/index.html     
+BBG includes -  https://rawcdn.githack.com/steveantony5/Floor-Cleaning-Robot/775f34e1458c684fa940017b1a8e5687709b8e34/documentation/BBG/html/index.html  
