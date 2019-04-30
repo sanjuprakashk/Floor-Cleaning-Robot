@@ -48,7 +48,7 @@ logger_init
 void logger_init()
 {
 	mq_unlink(QUEUE_NAME);
-	file_ptr = fopen("test.log", "w+");
+	file_ptr = fopen("test.log", "w");
 	fprintf(file_ptr,"Queue Init\n\n");
     	fclose(file_ptr);
 
@@ -93,7 +93,7 @@ void *logger_thread_callback()
     sprintf(buffer,"DEBUG CN [%s] Logger thread active\n", time_stamp());
     mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 
-	file_ptr = fopen("test.log", "a+");
+	file_ptr = fopen("test.log", "a");
 	while(1)
 	{
 
