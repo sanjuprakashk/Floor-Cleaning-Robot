@@ -4,13 +4,20 @@
  *  Created on: Apr 8, 2019
  *      Author: Steve Antony
  */
+
+/**********************************************
+ *        Includes
+ **********************************************/
 #include "log.h"
 
 
 /**********************************************
  *        Global definitions
  **********************************************/
+//receive log data from other tasks on remote node
 char log_data_recv[100];
+
+//structure to be transmitted from remote node to control node
 typedef struct
 {
     char task[5];
@@ -27,11 +34,12 @@ typedef struct
 send_sensor_data tx_data;
 
 
-
+//to receive sensor values from various tasks to logger tasks
 float lux_recv, distance_recv;
 uint32_t Water_level_recv;
 int8_t beat_recv;
-extern uint32_t DEGRADED_MODE_MANUAL;
+
+//initiating the queues
 void queue_init()
 {
     myQueue_light = xQueueCreate(QueueLength, sizeof(float));
@@ -84,6 +92,7 @@ void LogTask(void *pvParameters)
 
     for(;;)
     {
+        //receive lux sensor value lux task
         if(xQueueReceive(myQueue_light, &lux_recv, 0 ) == pdTRUE )
         {
             strcpy(tx_data.task,"LUX");
@@ -95,6 +104,7 @@ void LogTask(void *pvParameters)
 
         }
 
+        //receive ultrasonic sensor value ultrasonic task
         if(xQueueReceive(myQueue_ultra, &distance_recv, 0 ) == pdTRUE )
         {
             strcpy(tx_data.task,"DIST");
@@ -106,6 +116,7 @@ void LogTask(void *pvParameters)
 
         }
 
+        //receive water level sensor value water level task
         if(xQueueReceive(myQueue_water, &Water_level_recv, 0 ) == pdTRUE )
         {
             strcpy(tx_data.task,"WAT");
@@ -118,6 +129,7 @@ void LogTask(void *pvParameters)
 
         }
 
+        //receive heartbeat from heartbeat task
         if(xQueueReceive(myQueue_heartbeat, &beat_recv, 0 ) == pdTRUE )
         {
             strcpy(tx_data.task,"BEA");
@@ -128,7 +140,7 @@ void LogTask(void *pvParameters)
 
         }
 
-
+        //receive log data from various tasks
         memset(log_data_recv,'\0',sizeof(log_data_recv));
         if(xQueueReceive(myQueue_log, log_data_recv, 0 ) == pdTRUE )
         {
@@ -144,7 +156,7 @@ void LogTask(void *pvParameters)
     }
 }
 
-
+/*Uart function to sensor data to the control node*/
 void UART_send(char* ptr, int len)
 {
     while(len != 0)
@@ -155,7 +167,7 @@ void UART_send(char* ptr, int len)
     }
 }
 
-
+/*Uart function to logger data to the control node*/
 void UART_send_log(char* ptr, int len)
 {
     while(len != 0)

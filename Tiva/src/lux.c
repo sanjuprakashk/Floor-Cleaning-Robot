@@ -1,5 +1,5 @@
 /*
- * temp.c
+ * lux.c
  *
  *  Created on: Apr 9, 2019
  *      Author: Steve Antony
@@ -64,7 +64,9 @@ void LightTask(void *pvParameters)
             /*Start led timer*/
             xTimerStart( xTimer_light, 0 );
             i2c_setup();
+            vTaskDelay(1000/portTICK_PERIOD_MS);
 
+            //Start up tests for lux sensor
             int8_t ret = lux_sensor_setup();
             if(ret == -1)
             {
@@ -138,8 +140,10 @@ void i2c_setup()
     I2CMasterInitExpClk(I2C2_BASE, output_clock_rate_hz, false);
 }
 
+/*Configuring lux sensor*/
 int8_t lux_sensor_setup()
 {
+    int flag = 0;
     /*command to write on control register*/
     register_data = 0x03;
     write_byte_i2c2(LIGHT_SENSOR, CONTROL_REGISTER, register_data);
@@ -148,25 +152,22 @@ int8_t lux_sensor_setup()
     read_byte_i2c2(LIGHT_SENSOR, CONTROL_REGISTER, &register_data);
 
     UARTprintf("0x03 --> %x",register_data);
-    if(register_data != 0x33)
+    if((register_data == 0x03) || (register_data == 0x33) )
     {
-        return -1;
+        flag = 0;
     }
 
     /*command to write on TIMING_REGISTER*/
     register_data = 0x12;
     write_byte_i2c2(LIGHT_SENSOR, TIMING_REGISTER, register_data);
 
-    register_data = 0x00;
-    read_byte_i2c2(LIGHT_SENSOR, TIMING_REGISTER, &register_data);
-
-    UARTprintf("0x12 --> %x",register_data);
-    if(register_data != 0x12)
-    {
+    if(flag == 0)
+        return 0;
+    else
         return -1;
-    }
 
 }
+
 
 void read_lux_CH0()
 {

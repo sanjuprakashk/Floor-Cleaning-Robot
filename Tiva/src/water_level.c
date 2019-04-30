@@ -5,12 +5,19 @@
  *      Author: Steve
  */
 
+/**********************************************
+ *        Includes
+ **********************************************/
 #include "waterlevel.h"
 
+/**********************************************
+ *        Globals
+ **********************************************/
 int FLAG_WL = 0;
 static char buffer_log[BUFFER];
 char temp_buffer[100];
 
+/*water level task*/
 void Water_level(void *pvParameters)
 {
     UARTprintf("Water level task\n");
@@ -54,6 +61,7 @@ void Water_level(void *pvParameters)
     xTimerStart( xTimer_WL, 0 );
 
 
+    /*start up test*/
     ADCProcessorTrigger(ADC0_BASE, 3);
 
 
@@ -64,12 +72,16 @@ void Water_level(void *pvParameters)
 
     ADCSequenceDataGet(ADC0_BASE, 3, &Water_level_data);
 
+    //kill if the startup fails
     if(Water_level_data > 3000)
     {
         UARTprintf("Startup test failed for water level sensor WL %d\n", Water_level_data);
          LOG_ERROR("Killed water level sensor task - Startup failed\n")
          vTaskDelete( NULL );
     }
+
+
+
     while(1)
     {
         if(FLAG_WL)
@@ -115,12 +127,12 @@ void open_value()
 {
     GPIOPinWrite(GPIO_PORTK_BASE, GPIO_PIN_7, GPIO_PIN_7);
     UARTprintf("CN: Valve opened\n");
-    LOG_ERROR("Valve opened")
+    LOG_INFO("Valve opened")
 }
 
 void close_value()
 {
     GPIOPinWrite(GPIO_PORTK_BASE, GPIO_PIN_7, 0);
     UARTprintf("CN: Valve closed\n");
-    LOG_ERROR("Valve closed")
+    LOG_INFO("Valve closed")
 }

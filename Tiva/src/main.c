@@ -32,7 +32,6 @@
 #include "driverlib/gpio.h"
 #include "driverlib/inc/hw_memmap.h"
 #include "log.h"
-#include "spi.h"
 #include "object_detection.h"
 #include "uart.h"
 #include "interrupt.h"
@@ -43,59 +42,56 @@
 #include "waterlevel.h"
 #include "semphr.h"
 
-SemaphoreHandle_t xSemaphore;
 /**********************************************
- *        Function Prototypes
+ *               Tasks
  **********************************************/
-/********************************************
- * Func name :   LEDTask
- * Parameters:   none
- * Description : Thread for LED task
- ********************************************/
-void LEDTask(void *pvParameters);
-void ConfigureUART2();
-void ConfigureUART1();
-void ConfigureUART3();
-/********************************************
- * Func name :   vTimerCallback_LED_handler
- * Parameters:   none
- * Description : timer handler for LED timer
- ********************************************/
-void vTimerCallback_LED_handler( TimerHandle_t  *pxTimer );
 
+/********************************************
+ *         Actuator task
+ * Description : Controls the autonomous movement
+ *                of the robot in auto mode
+ ********************************************/
 void Actuator_motor(void *pvParameters);
+
+/********************************************
+ *         ReadUart task
+ * Description : This tasks reads the control
+ *                data which the Control node sends
+ ********************************************/
 void ReadUartTask(void *pvParameters);
-void Actuator_hot_h2o(void *pvParameters);
-void Actuator_night(void *pvParameters);
 
 /**********************************************
  *        Globals
  **********************************************/
+// for queues that sends data from different tasks to the logger tasks
 QueueHandle_t myQueue_ultra, myQueue_light, myQueue_log, myQueue_water, myQueue_heartbeat;
 
-struct log_struct_led log_led;
+//output clock
 uint32_t output_clock_rate_hz;
 
-//For temperature notification
-TaskHandle_t handle_motor,handle_night,handle_heartbeat;
+//For object detection notification and heartbeat notification to get pulses from control node
+TaskHandle_t handle_motor,handle_heartbeat;
 
+// flag to start only once based when lux is very low
 static uint8_t start_again = 1;
 
+//Flag set when the threads are not created properly
 uint8_t STARTUP_FAILED = 0;
 
+/*Sets application mode
+ * mode 0  - Auto mode
+ * mode 1  - Manual mode
+ */
 int8_t mode=0; //auto mode on default
 
-extern uint32_t DEGRADED_MODE_MANUAL;
+//temporary buffer for logger
 char temp_buffer[100];
 
-/**********************************************
- *        Globals
- **********************************************/
-int FLAG_LED = pdFALSE;
-QueueHandle_t myQueue_temp, myQueue_led, myQueue_alert;
-struct log_struct_led log_led;
-uint32_t output_clock_rate_hz;
-TaskHandle_t handle;
+/*mutex to avoid race condition when many tasks use
+ * the same queue for logging
+ */
+
+SemaphoreHandle_t xSemaphore;
 
 /**********************************************
  *        Main Function
@@ -115,18 +111,20 @@ int main(void)
     FPUEnable();
 
     // Set up the UART which is connected to the virtual COM port
-
-
     UARTStdioConfig(0, 115200, SYSTEM_CLOCK);
 
+    //initiating message queues for communication between various tasks and logger
     queue_init();
 
-
+    //initiating the semaphore
     xSemaphore = xSemaphoreCreateMutex();
 
+    //configures the uarts UART1, UART2, UART3
     ConfigureUART1();
     ConfigureUART2();
     ConfigureUART3();
+
+    //initiating the motor pins
     init_motor();
 
 
@@ -147,73 +145,63 @@ int main(void)
    }
 
 
-    // Create temp task
+    // Create ultrasonic task
     if(pdPASS != xTaskCreate(UtrasonicTask, (const portCHAR *)"ultrasonic",
                        configMINIMAL_STACK_SIZE, NULL, 1, NULL))
     {
         STARTUP_FAILED = pdTRUE;
         DEGRADED_MODE_MANUAL = 1;
-        perror("Thread creation failed for UtrasonicTask\n");
         LOG_ERROR("Thread creation failed for UtrasonicTask\n")
     }
 
-    // Create temp task
+    // Create uart task for reading control data from control node
     if(pdPASS != xTaskCreate(ReadUartTask, (const portCHAR *)"UART",
                           configMINIMAL_STACK_SIZE, NULL, 1, NULL))
     {
         STARTUP_FAILED = pdTRUE;
-        perror("Thread creation failed for ReadUartTask\n");
         LOG_ERROR("Thread creation failed for ReadUartTask\n")
     }
 
+    // Create motor actuator task
     if(pdPASS != xTaskCreate(Actuator_motor, (const portCHAR *)"motion",
                                  configMINIMAL_STACK_SIZE, NULL, 1, &handle_motor))
     {
         STARTUP_FAILED = pdTRUE;
-        perror("Thread creation failed for Actuator_motor\n");
         LOG_ERROR("Thread creation failed for Actuator_motor\n")
     }
 
+    // Create heartbeat task
     if(pdPASS != xTaskCreate(Control_Node_heartbeat, (const portCHAR *)"heartbeat",
                                        configMINIMAL_STACK_SIZE, NULL, 1, &handle_heartbeat))
     {
         STARTUP_FAILED = pdTRUE;
-        perror("Thread creation failed for Control_Node_heartbeat\n");
         LOG_ERROR("Thread creation failed for Control_Node_heartbeat\n")
     }
 
+    // Create water level task
     if(pdPASS != xTaskCreate(Water_level, (const portCHAR *)"waterlevel",
                                               configMINIMAL_STACK_SIZE, NULL, 1, NULL))
     {
         STARTUP_FAILED = pdTRUE;
-        perror("Thread creation failed for Water_level\n");
         LOG_ERROR("Thread creation failed for Water_level\n")
     }
 
+    //Checks if the threads were created successfully
     if(STARTUP_FAILED == pdTRUE)
     {
         LOG_ERROR("Startup test failed in creating tasks\n")
     }
-
-//    if(pdPASS != xTaskCreate(startup_and_runtime_fault_detection, (const portCHAR *)"fault",
-//                                                  configMINIMAL_STACK_SIZE, NULL, 1, NULL))
-//    {
-//        STARTUP_FAILED = pdTRUE;
-//        perror("Thread creation failed for fault\n");
-//    }
 
 
     /*start the schedule*/
     vTaskStartScheduler();
 
 
-
-
     return 0;
 
 }
 
-//UART1 recv on PB0
+/*Task to receive control data from control node*/
 void ReadUartTask(void *pvParameters)
 {
     for(;;)
@@ -246,7 +234,7 @@ void ReadUartTask(void *pvParameters)
                     if((start_again == 1) && (mode == 0) && (DEGRADED_MODE_MANUAL == 0))
                     {
                         UARTprintf("CN: Auto on of robot\n");
-                        LOG_INFO("Auto on of robot")
+                        LOG_INFO("Auto on of robot\n")
                         forward();
                         start_again = 0;
                     }
@@ -255,6 +243,7 @@ void ReadUartTask(void *pvParameters)
                 else if(c == 'm') //manual mode
                 {
                     UARTprintf("CN: Manual mode\n");
+                    LOG_INFO("Switched to Manual mode\n")
                     mode = 1 ;
                     stop();
 
@@ -264,6 +253,7 @@ void ReadUartTask(void *pvParameters)
                     if((DEGRADED_MODE_MANUAL == 0))
                     {
                         UARTprintf("CN: Auto mode\n");
+                        LOG_INFO("Switched to Auto mode\n")
                         mode = 0 ;
                     }
 
@@ -319,13 +309,15 @@ void ReadUartTask(void *pvParameters)
                     }
 
                 }
-                else if(c == 'o') //force start
+                else if(c == 'o') //force start from phone
                 {
                     if((DEGRADED_MODE_MANUAL == 0))
                     {
                         mode = 0 ;
                         forward();
                         UARTprintf("CN: force turn on\n");
+                        LOG_INFO("force turn on from phone\n")
+
                     }
 
                 }
@@ -334,7 +326,7 @@ void ReadUartTask(void *pvParameters)
 
 }
 
-
+/*Actuator task to control motors when an object is detected*/
 void Actuator_motor(void *pvParameters)
 {
 
@@ -348,8 +340,7 @@ void Actuator_motor(void *pvParameters)
             {
 
                 UARTprintf("Object detected notified\n");
-                LOG_INFO("Object detected")
-                //object detected
+                LOG_INFO("Object detected\n")
                 backward();
 
 
@@ -382,7 +373,8 @@ void __error__(char *pcFilename, uint32_t ui32Line)
 
 
 
-//Transmit
+/*Uart to transmit sensor data to the control node*/
+//Transmit data on PA7
 void ConfigureUART2(void)
 {
         ROM_SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOA);    //Enable GPIO
@@ -404,7 +396,8 @@ void ConfigureUART2(void)
 
 
 
-//Receive
+/*Uart to receive control data from the control node*/
+//UART1 recv on PB0
 void ConfigureUART1()
 {
 
@@ -428,7 +421,8 @@ void ConfigureUART1()
 
 }
 
-//logger send
+//logger send/*Uart to transmit log data to the control node*/
+//UART3 tx on PA5
 void ConfigureUART3()
 {
 

@@ -11,16 +11,35 @@
 
 #include "object_detection.h"
 
-uint32_t start, end;
-uint32_t FLAG_UL, conv_complete = 0;
-float time_pulse = 0;
-float distance_send;
-static char buffer_log[BUFFER];
-uint32_t ULT_DEAD = 0;
-uint32_t DEGRADED_MODE_MANUAL = 0;
-SemaphoreHandle_t xSemaphore;
-extern TaskHandle_t handle_motor;
 
+/**********************************************
+ *        GLOBALS
+ **********************************************/
+//to find the pulse duration
+uint32_t start, end;
+
+//conversion complete flag
+uint32_t FLAG_UL, conv_complete = 0;
+
+//find the duration of echo on pulse
+float time_pulse = 0;
+
+//get the distance
+float distance_send;
+
+//for local logger
+static char buffer_log[BUFFER];
+
+//flag to indicate if the sensor is dead
+uint32_t ULT_DEAD = 0;
+
+//indicate degraded mode
+uint32_t DEGRADED_MODE_MANUAL = 0;
+
+//mutex for log
+SemaphoreHandle_t xSemaphore;
+
+//local logger buffer
 char temp_buffer[100];
 
 
@@ -72,8 +91,6 @@ void PortFIntHandler()
     GPIOIntClear(GPIO_PORTF_BASE, GPIO_INT_PIN_3);
 
 
-
-
         if(GPIOPinRead(GPIO_PORTF_BASE, GPIO_INT_PIN_3) == GPIO_INT_PIN_3)
         {
             HWREG(TIMER2_BASE + TIMER_O_TAV) = 0;
@@ -102,7 +119,7 @@ void UtrasonicTask(void *pvParameters)
     long x_ultra_id = 1003;
     xTimerHandle xTimer_ult;
     xTimer_ult = xTimerCreate("Timer_ultrasonic",               // Just a text name, not used by the kernel.
-                                pdMS_TO_TICKS( 530 ),     // 1000ms
+                                pdMS_TO_TICKS( PERIOD_ULTRASONIC ),
                                 pdTRUE,                    // The timers will auto-reload themselves when they expire.
                                 ( void * ) x_ultra_id,      // Assign each timer a unique id equal to its array index.
                                 vTimerCallback_Ultra_handler// Each timer calls the same callback when it expires.
@@ -159,7 +176,7 @@ void UtrasonicTask(void *pvParameters)
                      {
                          if(distance_send < 30)
                          {
-
+                             //when object detected
                              xTaskNotifyGive(handle_motor);
 
 
@@ -177,7 +194,7 @@ void UtrasonicTask(void *pvParameters)
                  FLAG_UL = pdFALSE;
 
              }
-             if(ULT_DEAD > 5)
+             if(ULT_DEAD > 5) //switch to degraded mode
              {
                 DEGRADED_MODE_MANUAL = 1;
                 mode = 1;

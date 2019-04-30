@@ -8,6 +8,9 @@
 #ifndef INC_HEARTBEAT_H_
 #define INC_HEARTBEAT_H_
 
+/**********************************************
+ *               Includes
+ **********************************************/
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -35,8 +38,20 @@
 
 #include "motor_driver.h"
 
+/**********************************************
+ *               Function Prototypes
+ **********************************************/
+/*Heartbeat task*/
 void Control_Node_heartbeat(void *pvParameters);
+
+/*Heartbeat Timer handler*/
 void vTimerCallback_HB_handler( TimerHandle_t  *pxTimer );
+
+/**********************************************
+ *               Global declarations
+ **********************************************/
 extern QueueHandle_t myQueue_heartbeat;
+extern uint32_t DEGRADED_MODE_MANUAL;
+
 #endif /* INC_HEARTBEAT_H_ */
 

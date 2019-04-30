@@ -1,7 +1,7 @@
 /*
  * main.h
  *
- *  Created on: Mar 28, 2015
+ *  Created on: Apr 20, 2019
  *      Author: Steve
  */
 
@@ -14,12 +14,52 @@
 // System clock rate, 120 MHz
 #define SYSTEM_CLOCK    (120000000U)
 
-
-#define LED_TOGGLE_PERIOD_MS (100)
-#define LED_ID (1000)
-#define LED_1_ON (0x01)
-#define LED_2_ON (0x02)
 #define QUEUE_TIMEOUT_TICKS (10)
 
+/**********************************************
+ *              GLOBAL DECLARATION
+ **********************************************/
+extern uint32_t DEGRADED_MODE_MANUAL;
 
+/**********************************************
+ *              Function Prototypes
+ **********************************************/
+/*
+--------------------------------------------------------------------------------------------
+ConfigureUART2
+--------------------------------------------------------------------------------------------
+*   This configures UART2
+*
+*   @\param         none
+*
+*   @\return        none
+*
+*/
+void ConfigureUART2();
+
+/*
+--------------------------------------------------------------------------------------------
+ConfigureUART1
+--------------------------------------------------------------------------------------------
+*   This configures UART1
+*
+*   @\param         none
+*
+*   @\return        none
+*
+*/
+void ConfigureUART1();
+
+/*
+--------------------------------------------------------------------------------------------
+ConfigureUART3
+--------------------------------------------------------------------------------------------
+*   This configures UART3
+*
+*   @\param         none
+*
+*   @\return        none
+*
+*/
+void ConfigureUART3();
 #endif /* MAIN_H_ */

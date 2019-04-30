@@ -27,12 +27,10 @@
 #define BUFFER (100)
 
 
-extern SemaphoreHandle_t xSemaphore;
-
 #define LOG_INFO(str) {\
 xSemaphoreTake(xSemaphore, 0);\
 memset(temp_buffer,'\0',100);\
-sprintf(temp_buffer,"INFO [%d] %s",xTaskGetTickCount(),str);\
+sprintf(temp_buffer,"INFO RN: [%d] %s",xTaskGetTickCount(),str);\
 xQueueSendToBack( myQueue_log,( void * ) temp_buffer, QUEUE_TIMEOUT_TICKS ) ;\
 xSemaphoreGive(xSemaphore);\
 }
@@ -40,7 +38,7 @@ xSemaphoreGive(xSemaphore);\
 #define LOG_ERROR(str) {\
 xSemaphoreTake(xSemaphore, 0);\
 memset(temp_buffer,'\0',100);\
-sprintf(temp_buffer,"ERROR [%d] %s",xTaskGetTickCount(),str);\
+sprintf(temp_buffer,"ERROR RN: [%d] %s",xTaskGetTickCount(),str);\
 xQueueSendToBack( myQueue_log,( void * ) temp_buffer, QUEUE_TIMEOUT_TICKS ) ;\
 xSemaphoreGive(xSemaphore);\
 }
@@ -48,7 +46,7 @@ xSemaphoreGive(xSemaphore);\
 #define LOG_WARN(str) {\
 xSemaphoreTake(xSemaphore, 0);\
 memset(temp_buffer,'\0',100);\
-sprintf(temp_buffer,"WARN [%d] %s",xTaskGetTickCount(),str);\
+sprintf(temp_buffer,"WARN RN: [%d] %s",xTaskGetTickCount(),str);\
 xQueueSendToBack( myQueue_log,( void * ) temp_buffer, QUEUE_TIMEOUT_TICKS ) ;\
 xSemaphoreGive(xSemaphore);\
 }
@@ -58,6 +56,8 @@ xSemaphoreGive(xSemaphore);\
 extern QueueHandle_t myQueue_light, myQueue_ultra, myQueue_log, myQueue_water, myQueue_heartbeat;
 extern int CN_ACTIVE ;
 extern int8_t mode;
+extern uint32_t DEGRADED_MODE_MANUAL;
+extern SemaphoreHandle_t xSemaphore;
 
 /**********************************************
  *        Function Prototypes
@@ -76,6 +76,18 @@ void queue_init();
  ********************************************/
 void LogTask(void *pvParameters);
 
+
+/********************************************
+ * Func name :   UART_send
+ * Parameters:   Address, length
+ * Description : Uart function to send sensor values to the control node
+ ********************************************/
 void UART_send(char* ptr, int len);
+
+/********************************************
+ * Func name :   UART_send_log
+ * Parameters:   Address, length
+ * Description : Uart function to send log data to the control node
+ ********************************************/
 void UART_send_log(char* ptr, int len);
 #endif /* LOG_H_ */

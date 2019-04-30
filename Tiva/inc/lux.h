@@ -1,13 +1,17 @@
 /*
- * temp.h
+ * lux.h
  *
  *  Created on: Apr 9, 2019
  *      Author: Steve Antony
  */
 
-#ifndef TEMP_H_
-#define TEMP_H_
+#ifndef LUX_H_
+#define LUX_H_
 
+
+/**********************************************
+ *        Includes
+ **********************************************/
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>
@@ -81,6 +85,7 @@ extern uint32_t output_clock_rate_hz;
 
 extern QueueHandle_t myQueue_light;
 
+
 /**********************************************
  *        Function Prototypes
  **********************************************/
@@ -103,13 +108,47 @@ void vTimerCallback_Light_handler( TimerHandle_t  *);
  * Description : Configuration of i2c bus
  ********************************************/
 void i2c_setup();
+
+/********************************************
+ * Func name :   read_lux_CH0
+ * Parameters:   none
+ * Description : Reads CH0 value of the lux sensor
+ ********************************************/
 void read_lux_CH0();
+
+/********************************************
+ * Func name :   read_lux_CH1
+ * Parameters:   none
+ * Description : Reads CH1 value of the lux sensor
+ ********************************************/
 void read_lux_CH1();
+
+/********************************************
+ * Func name :   lux_sensor_setup
+ * Parameters:   none
+ * Description : Wrapper for configuring lux sensor registers
+ ********************************************/
 int8_t lux_sensor_setup();
+
+/********************************************
+ * Func name :   read_byte_i2c2
+ * Parameters:   slave address,  register address, address of data
+ * Description : Read a byte to any register
+ ********************************************/
 void read_byte_i2c2(uint8_t slave, uint8_t register_addr, uint8_t *data);
+
+/********************************************
+ * Func name :   write_byte_i2c2
+ * Parameters:   slave address,  register address, data
+ * Description : Write a byte to any register
+ ********************************************/
 void write_byte_i2c2(uint8_t slave, uint8_t register_addr, uint8_t data);
+
+/********************************************
+ * Func name :   lux_measurement
+ * Parameters:   CH0 value, CH1 value
+ * Description : Calculate lux value based on the channel values
+ ********************************************/
 float lux_measurement(float , float );
 
-void I2CSendByte(uint8_t target_address, uint8_t register_address, uint8_t data);
-uint8_t I2CGetByte(uint8_t target_address, uint8_t register_address);
-#endif /* TEMP_H_ */
+#endif /* LUX_H_ */

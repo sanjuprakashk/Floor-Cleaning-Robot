@@ -1,6 +1,13 @@
 
+/*
+ * motor_driver.c
+ *
+ *  Created on: Apr 14, 2019
+ *      Author: Steve Antony
+ */
 
 #include "motor_driver.h"
+
 
 void init_motor()
 {
