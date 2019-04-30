@@ -3,38 +3,38 @@
 
 char *get_lux()
 {
-	memset(lux,' ',sizeof(lux));
+	memset(lux,'\0',sizeof(lux));
 	sprintf(lux,"%f",comm_rec.lux);
 	return lux;
 }
 
 char *get_distance()
 {
-	memset(distance,' ',sizeof(distance));
+	memset(distance,'\0',sizeof(distance));
 	sprintf(distance,"%f",comm_rec.distance);
 	return distance;
 } 
 
 char *get_waterLevel()
 {
-	memset(waterLevel,' ', sizeof(waterLevel));
+	memset(waterLevel,'\0', sizeof(waterLevel));
 	sprintf(waterLevel,"%f", comm_rec.waterLevel);
 	return waterLevel;
 }
 
 char *get_mode()
 {
-	memset(mode,' ', sizeof(mode));
+	memset(mode,'\0', sizeof(mode));
 	if(!comm_rec.mode)
 		sprintf(mode,"Auto");
-	if(comm_rec.mode)
+	else if(comm_rec.mode)
 		sprintf(mode,"Manual");
 	return mode;
 }
 
 char *get_dgMode()
 {
-	memset(dg_mode,' ', sizeof(dg_mode));
+	memset(dg_mode,'\0', sizeof(dg_mode));
 	if(!comm_rec.dg_mode)
 		sprintf(dg_mode,"Normal");
 	else if(comm_rec.dg_mode)
@@ -45,7 +45,7 @@ char *get_dgMode()
 
 char *get_opStatus_tiva()
 {
-	memset(tiva_opstatus,' ', sizeof(tiva_opstatus));
+	memset(tiva_opstatus,'\0', sizeof(tiva_opstatus));
 	if(!tiva_dead)
 		sprintf(tiva_opstatus,"Alive");
 	if(tiva_dead)
@@ -56,7 +56,7 @@ char *get_opStatus_tiva()
 
 char *get_opStatus_distance()
 {
-	memset(distance_opstatus,' ', sizeof(distance_opstatus));
+	memset(distance_opstatus,'\0', sizeof(distance_opstatus));
 	if(!distance_dead)
 		sprintf(distance_opstatus,"Alive");
 	if(distance_dead)
@@ -68,7 +68,7 @@ char *get_opStatus_distance()
 char *get_opStatus_lux()
 {
 
-	memset(lux_opstatus,' ', sizeof(lux_opstatus));
+	memset(lux_opstatus,'\0', sizeof(lux_opstatus));
 	if(!lux_dead)
 		sprintf(lux_opstatus,"Alive");
 	if(lux_dead)
@@ -79,7 +79,7 @@ char *get_opStatus_lux()
 
 char *get_opStatus_water()
 {
-	memset(water_opstatus,' ', sizeof(water_opstatus));
+	memset(water_opstatus,'\0', sizeof(water_opstatus));
 	if(water_dead || water_outOfRange)
 		sprintf(water_opstatus,"Dead");
 	else
@@ -91,7 +91,7 @@ char *get_opStatus_water()
 
 char *get_valveStatus()
 {
-	memset(water_opstatus,' ', sizeof(water_opstatus));
+	memset(water_opstatus,'\0', sizeof(water_opstatus));
 	if(already_open)
 		sprintf(valve_status,"Open");
 	else if(already_closed)

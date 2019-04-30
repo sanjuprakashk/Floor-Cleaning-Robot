@@ -4,8 +4,9 @@
 #include "uart.h"
 #include <pthread.h>
 #include "POSIX_timer.h"
+#include "communication.h"
 
-#define TIVA_HEART_BEAT_CHECK_PERIOD (3)//3 s
+#define TIVA_HEART_BEAT_CHECK_PERIOD (5)//5 s
 
 int tiva_active, tiva_active_prev;
 int distance_active, distance_active_prev, lux_active, lux_active_prev, water_active, water_active_prev;

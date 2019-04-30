@@ -89,7 +89,7 @@ int8_t uart_receive(uart_properties *uart, void *rx_r, int length) {
 
 		comm_rec.distance = rx->distance;
 
-		comm_rec.mode = rx->mode;
+	//	comm_rec.mode = rx->mode;
 		
 	}
 
@@ -99,7 +99,7 @@ int8_t uart_receive(uart_properties *uart, void *rx_r, int length) {
 
 		comm_rec.lux = rx->lux;
 
-		comm_rec.mode = rx->mode;
+	//	comm_rec.mode = rx->mode;
 
 	}
 	
@@ -109,7 +109,7 @@ int8_t uart_receive(uart_properties *uart, void *rx_r, int length) {
 
 		comm_rec.waterLevel = rx->water;
 	
-		comm_rec.mode = rx->mode;
+	//	comm_rec.mode = rx->mode;
 	}
 
 	else if(strcmp(rx->task_name,"BEA") == 0)
@@ -119,6 +119,7 @@ int8_t uart_receive(uart_properties *uart, void *rx_r, int length) {
 	}
 
 
+	comm_rec.mode = rx->mode;
 	return count;
 }
 

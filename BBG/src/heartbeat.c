@@ -49,7 +49,7 @@ void beat_timer_handler(union sigval val)
 		printf("INFO Lux alive\n");
 	}
 
-	if(water_active <= water_active_prev)
+	if((water_active <= water_active_prev) || water_outOfRange)
 	{
 		water_dead = 1;
 		printf("ERROR Water dead\n");
