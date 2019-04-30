@@ -127,6 +127,14 @@ int main(void)
     //initiating the motor pins
     init_motor();
 
+    // Create logger task
+    if(pdPASS != xTaskCreate(LogTask, (const portCHAR *)"Log",
+                   configMINIMAL_STACK_SIZE, NULL, 1, NULL))
+   {
+       STARTUP_FAILED = pdTRUE;
+       LOG_ERROR("Thread creation failed for LogTask\n")
+   }
+
 
     // Create light task
    if(pdPASS != xTaskCreate(LightTask, (const portCHAR *)"Light",
@@ -134,14 +142,6 @@ int main(void)
    {
        STARTUP_FAILED = pdTRUE;
        LOG_ERROR("Thread creation failed for LightTask\n")
-   }
-
-    // Create logger task
-    if(pdPASS != xTaskCreate(LogTask, (const portCHAR *)"Log",
-                   configMINIMAL_STACK_SIZE, NULL, 1, NULL))
-   {
-       STARTUP_FAILED = pdTRUE;
-       LOG_ERROR("Thread creation failed for LogTask\n")
    }
 
 

@@ -32,7 +32,7 @@ class mywindow(QtWidgets.QDialog):
 
         self._update_timer = QtCore.QTimer()
         self._update_timer.timeout.connect(self.update_display)
-        self._update_timer.start(1000) # milliseconds
+        self._update_timer.start(2000) # milliseconds
 
 
 
@@ -139,7 +139,7 @@ class mywindow(QtWidgets.QDialog):
             motion_value = s.recv(10)
             motion_decoded = motion_value.decode('UTF-8')
             motion_string = str(motion_decoded)
-            print("lux value ", motion_string)
+            print("distance value ", motion_string)
             self.ui.motion.setText(motion_string)
             
             water_value = s.recv(10)
@@ -159,6 +159,36 @@ class mywindow(QtWidgets.QDialog):
             deg_mode_string = str(deg_mode_decoded)
             print("deg mode ", deg_mode_string)
             self.ui.deg_mode.setText(deg_mode_string)
+
+            tiva_value = s.recv(10)
+            tiva_decoded = tiva_value.decode('UTF-8')
+            tiva_string = str(tiva_decoded)
+            print("tiva mode ", tiva_string)
+            self.ui.tiva.setText(tiva_string)
+
+            ultra_status = s.recv(10)
+            ultra_status_decoded = ultra_status.decode('UTF-8')
+            ultra_status_decoded_string = str(ultra_status_decoded)
+            print("ultrasonic status ", ultra_status_decoded_string)
+            self.ui.ultra_sensor.setText(ultra_status_decoded_string)
+
+            lux_status = s.recv(10)
+            lux_status_decoded = lux_status.decode('UTF-8')
+            lux_status_decoded_string = str(lux_status_decoded)
+            print("lux status ", lux_status_decoded_string)
+            self.ui.lux_sensor.setText(lux_status_decoded_string)
+
+            water_status = s.recv(10)
+            water_status_decoded = water_status.decode('UTF-8')
+            water_status_decoded_string = str(water_status_decoded)
+            print("water status ", water_status_decoded_string)
+            self.ui.water_sensor.setText(water_status_decoded_string)
+
+            valve_status = s.recv(10)
+            valve_status_decoded = valve_status.decode('UTF-8')
+            valve_status_decoded_string = str(valve_status_decoded)
+            print("valve status ", valve_status_decoded_string)
+            self.ui.valve.setText(valve_status_decoded_string)
    
 
     
