@@ -47,7 +47,8 @@ logger_init
 */	
 void logger_init()
 {
-	file_ptr = fopen("CN.log", "a+");
+	mq_unlink(QUEUE_NAME);
+	file_ptr = fopen("test.log", "w+");
 	fprintf(file_ptr,"Queue Init\n\n");
     	fclose(file_ptr);
 
@@ -61,11 +62,12 @@ void logger_init()
 
     /* Setting the message queue attributes */
     mq_attributes.mq_flags = 0;
-    mq_attributes.mq_maxmsg = 10;
+    mq_attributes.mq_maxmsg = 5;
     mq_attributes.mq_msgsize = MAX_BUFFER_SIZE;
     mq_attributes.mq_curmsgs = 0;
 
     msg_queue = mq_open(QUEUE_NAME, O_CREAT | O_RDWR | O_NONBLOCK, 0666, &mq_attributes);
+    perror("MQ FAILED");
     printf("Return value of queue open = %d\n", msg_queue);
 }
 
@@ -91,7 +93,7 @@ void *logger_thread_callback()
     sprintf(buffer,"DEBUG CN [%s] Logger thread active\n", time_stamp());
     mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 
-	file_ptr = fopen("CN.log", "a+");
+	file_ptr = fopen("test.log", "a+");
 	while(1)
 	{
 

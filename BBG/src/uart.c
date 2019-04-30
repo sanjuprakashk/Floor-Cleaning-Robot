@@ -148,9 +148,11 @@ int8_t uart_receive(uart_properties *uart, void *rx_r, int length) {
 
 	}
 	
-	else if(strcmp(rx->task_name,"WAT") == 0)
+	else if((strcmp(rx->task_name,"WAT") == 0) && rx->water < 3000)
 	{
 		water_active++;
+
+		water_outOfRange = 0;
 
 		comm_rec.waterLevel = rx->water;
 	
