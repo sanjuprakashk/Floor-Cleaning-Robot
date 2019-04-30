@@ -1,8 +1,8 @@
 /**
- * @\file	POSIX_timer.c
- * @\author	Steve Antony X
- * @\brief	This files contains the function definitions for POSIX timer 
- * @\date	03/30/2019
+ * @\file	POSIX_timer.h
+ * @\author	Sanju Prakash Kannioth and Steve Antony X
+ * @\brief	This files contains the function definitions for POSIX timer
+ * @\date	04/29/2019
  *
  */
 

@@ -1,13 +1,15 @@
+/**
+ * @\file	POSIX_timer.h
+ * @\author	Sanju Prakash Kannioth and Steve Antony X
+ * @\brief	This files contains the declarations and header files for POSIX timer modules
+ * @\date	04/29/2019
+ *
+ */
+
 #ifndef POSIX_Timer_H_
 #define POSIX_Timer_H_
 
-/**
- * @\file	POSIX_timer.h
- * @\author	Steve Antony X
- * @\brief	This files contains the declarations and header files for POSIX timer modules
- * @\date	03/30/2019
- *
- */
+
 /*****************************************************************
 						Includes
 *****************************************************************/

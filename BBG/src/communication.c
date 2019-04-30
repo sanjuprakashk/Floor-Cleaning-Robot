@@ -1,6 +1,23 @@
+/**
+ * @\file	communication.c
+ * @\author	Sanju Prakash Kannioth
+ * @\brief	This files contains the definitions for the communication interface for tiva and BBG
+ * @\date	04/29/2019
+ *
+ */
 #include "communication.h"
 
-
+/*
+--------------------------------------------------------------------------------------------
+get_lux
+--------------------------------------------------------------------------------------------
+*	This function returns the most updated lux value in string format
+*
+* 	@\param			void
+*
+* 	@\return		string containing most recent lux value
+*
+*/
 char *get_lux()
 {
 	memset(lux,'\0',sizeof(lux));
@@ -8,6 +25,18 @@ char *get_lux()
 	return lux;
 }
 
+
+/*
+--------------------------------------------------------------------------------------------
+get_distance
+--------------------------------------------------------------------------------------------
+*	This function returns the most updated distance value in string format
+*
+* 	@\param			void
+*
+* 	@\return		string containing most recent distance value
+*
+*/
 char *get_distance()
 {
 	memset(distance,'\0',sizeof(distance));
@@ -15,6 +44,18 @@ char *get_distance()
 	return distance;
 } 
 
+
+/*
+--------------------------------------------------------------------------------------------
+get_waterLevel
+--------------------------------------------------------------------------------------------
+*	This function returns the most updated water level value in string format
+*
+* 	@\param			void
+*
+* 	@\return		string containing most recent water level value
+*
+*/
 char *get_waterLevel()
 {
 	memset(waterLevel,'\0', sizeof(waterLevel));
@@ -22,6 +63,18 @@ char *get_waterLevel()
 	return waterLevel;
 }
 
+
+/*
+--------------------------------------------------------------------------------------------
+get_mode
+--------------------------------------------------------------------------------------------
+*	This function returns the most updated operating mode in string format
+*
+* 	@\param			void
+*
+* 	@\return		string containing most updated operating mode value
+*
+*/
 char *get_mode()
 {
 	memset(mode,'\0', sizeof(mode));
@@ -32,6 +85,17 @@ char *get_mode()
 	return mode;
 }
 
+/*
+--------------------------------------------------------------------------------------------
+get_dgMode
+--------------------------------------------------------------------------------------------
+*	This function returns if the system is in degraded mode in string format
+*
+* 	@\param			void
+*
+* 	@\return		string containing degraded mode value
+*
+*/
 char *get_dgMode()
 {
 	memset(dg_mode,'\0', sizeof(dg_mode));
@@ -43,6 +107,17 @@ char *get_dgMode()
 	return dg_mode;
 }
 
+/*
+--------------------------------------------------------------------------------------------
+get_opStatus_tiva
+--------------------------------------------------------------------------------------------
+*	This function returns the most updated operation status of the remote node
+*
+* 	@\param			void
+*
+* 	@\return		string containing the most updated operation status of the remote node
+*
+*/
 char *get_opStatus_tiva()
 {
 	memset(tiva_opstatus,'\0', sizeof(tiva_opstatus));
@@ -54,6 +129,18 @@ char *get_opStatus_tiva()
 	return tiva_opstatus;
 }
 
+
+/*
+--------------------------------------------------------------------------------------------
+get_opStatus_distance
+--------------------------------------------------------------------------------------------
+*	This function returns the most updated operation status of the distance sensor
+*
+* 	@\param			void
+*
+* 	@\return		string containing the most updated operation status of the distance sensor
+*
+*/
 char *get_opStatus_distance()
 {
 	memset(distance_opstatus,'\0', sizeof(distance_opstatus));
@@ -65,6 +152,18 @@ char *get_opStatus_distance()
 	return distance_opstatus;
 }
 
+
+/*
+--------------------------------------------------------------------------------------------
+get_opStatus_lux
+--------------------------------------------------------------------------------------------
+*	This function returns the most updated operation status of the lux sensor
+*
+* 	@\param			void
+*
+* 	@\return		string containing the most updated operation status of the lux sensor
+*
+*/
 char *get_opStatus_lux()
 {
 
@@ -77,6 +176,18 @@ char *get_opStatus_lux()
 	return lux_opstatus;
 }
 
+
+/*
+--------------------------------------------------------------------------------------------
+get_opStatus_water
+--------------------------------------------------------------------------------------------
+*	This function returns the most updated operation status of the water level sensor
+*
+* 	@\param			void
+*
+* 	@\return		string containing the most updated operation status of the water level sensor
+*
+*/
 char *get_opStatus_water()
 {
 	memset(water_opstatus,'\0', sizeof(water_opstatus));
@@ -89,6 +200,18 @@ char *get_opStatus_water()
 	return water_opstatus;
 }
 
+
+/*
+--------------------------------------------------------------------------------------------
+get_valveStatus
+--------------------------------------------------------------------------------------------
+*	This function returns the most updated status of the valve
+*
+* 	@\param			void
+*
+* 	@\return		string containing the most updated status of the valve
+*
+*/
 char *get_valveStatus()
 {
 	memset(water_opstatus,'\0', sizeof(water_opstatus));
@@ -101,9 +224,23 @@ char *get_valveStatus()
 	
 }
 
+
+
+/*
+--------------------------------------------------------------------------------------------
+communication_thread_callback
+--------------------------------------------------------------------------------------------
+*	This is the thread creation callback function for the communication thread
+*
+* 	@\param			void
+*
+* 	@\return		void
+*
+*/
 void *communication_thread_callback()
 {
 	char buffer[MAX_BUFFER_SIZE];
+	/* Flags to check tiva and sensor heartbeats */
 	tiva_active = 0;
 
 	tiva_active_prev = 0;
@@ -120,10 +257,14 @@ void *communication_thread_callback()
     
     water_active = 0;
 
+    memset(buffer,'\0',sizeof(buffer));
+    sprintf(buffer,"DEBUG CN [%s] Communication thread active\n", time_stamp());
+    mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 	printf("Inside communication thread\n");
 
 	struct sensor_struct sensor;
 
+	/* Configure UART4 on BBG */
 	uart_properties *uart4 = malloc(sizeof(uart_properties));
 	uart4->uart_no = 4;
 	uart4->baudrate = B115200;
@@ -132,6 +273,7 @@ void *communication_thread_callback()
 
 	printf("Open success? %d\n", isOpen4);
 
+	/* Messages to be sent to Tiva for closed loop control */
 	char obj_detect = '1';
 	char valve_close = '2';
 	char valve_open = '3';
@@ -141,103 +283,89 @@ void *communication_thread_callback()
 
 
 	if (isOpen4 == 0) {
+		memset(buffer,'\0',sizeof(buffer));
+	    sprintf(buffer,"DEBUG CN [%s] UART4 Opened successfully\n", time_stamp());
+	    mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
+		
 		while(1)
 		{
-			//	printf("Entered while\n");
-		
-				// sprintf(buf, "foo %d", ++i);
-
-			/*	strcpy(sensor.task_name,"LUX");
-				sensor.timeStamp = 100;
-				sensor.sensor_data = 9999;
-
-				// Send data to uart1
-				if (uart_send(uart1, &sensor, sizeof(sensor_struct)) < 0) {
-					printf("Could not send data to uart port");
-					return -1;
-				}
-
-	*/
-	//			usleep(1000);
-
-
-
-				// usleep(10000);
-			//sensor.sensor_data = 0;
-			//pthread_mutex_lock(&lock_res);
-			recv = uart_receive(uart4,&sensor, sizeof(sensor_struct)); 
-			//pthread_mutex_unlock(&lock_res);
+			recv = uart_receive(uart4,&sensor, sizeof(sensor_struct)); // Receive sensor data from Tiva on BBG UART4
+			
 			if(recv > 0)
 			{
 
-				//tiva_active++;
+				/* Send object detected message to Tiva if object is detected */
 				if((strcmp(sensor.task_name,"DIST") == 0) && comm_rec.distance< 30)
 				{
 					pthread_mutex_lock(&lock_res);
 					uart_send(uart2, &obj_detect, sizeof(char));
 					pthread_mutex_unlock(&lock_res);
-					printf("OBJ DETECTED = %f\n",sensor.distance);
-					strcpy(buffer,"WARN Objected detected\n");
+					
+					memset(buffer,'\0',sizeof(buffer));
+					sprintf(buffer,"WARN CN [%s] Object detected sent from CN\n", time_stamp());
 					mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 				}
 
+				/* Send lux auto mode on to Tiva if lux is below threshold */
 				else if((strcmp(sensor.task_name,"LUX") == 0) && comm_rec.lux < 10)
 				{
 
 					pthread_mutex_lock(&lock_res);
 					uart_send(uart2, &lux_auto, sizeof(char));
 					pthread_mutex_unlock(&lock_res);
-					strcpy(buffer,"WARN Lux below threshold\n");
+
+					memset(buffer,'\0',sizeof(buffer));
+					sprintf(buffer,"DEBUG CN [%s] Lux auto mode sent from CN\n", time_stamp());
 					mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 				}
 
+				/* If water level sensor is inactive, or falls out of range */
 				else if((strcmp(sensor.task_name,"WAT") == 0) && comm_rec.waterLevel > 3000)
 				{
 					water_outOfRange = 1;
+
+					memset(buffer,'\0',sizeof(buffer));
+					sprintf(buffer,"ERROR CN [%s] Water level out of range\n", time_stamp());
+					mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 				}
+
+				/* Send valve closed to Tiva if water level is below threshold */
 				else if((strcmp(sensor.task_name,"WAT") == 0) && comm_rec.waterLevel < 300 && already_closed == 0)
 				{
 					pthread_mutex_lock(&lock_res);
 					uart_send(uart2, &valve_close, sizeof(char));
 					pthread_mutex_unlock(&lock_res);
+
+					memset(buffer,'\0',sizeof(buffer));
+					sprintf(buffer,"DEBUG CN [%s]  Valve close sent from CN\n", time_stamp());
+					mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
+
 					already_closed = 1;
 					already_open = 0;
 					water_outOfRange = 0;
-					printf("ERROR Valve closed = %f\n", comm_rec.waterLevel);
-					//strcpy(buffer,"WARN Valve closed\n");
-					//mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 				}
 			
-
+				/* Send valve open to Tiva if water level is above threshold */
 				else if((strcmp(sensor.task_name,"WAT") == 0) && comm_rec.waterLevel >= 300 && already_open == 0)
 				{
 					pthread_mutex_lock(&lock_res);
 					uart_send(uart2, &valve_open, sizeof(char));
 					pthread_mutex_unlock(&lock_res);
+
+					memset(buffer,'\0',sizeof(buffer));
+					sprintf(buffer,"DEBUG CN [%s]  Valve open sent from CN\n", time_stamp());
+					mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
+
 					already_open = 1;
 					already_closed = 0;
 					water_outOfRange = 0;
-					printf("ERROR Valve opened = %f\n", comm_rec.waterLevel);
-					//strcpy(buffer,"WARN Valve closed\n");
-					//mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
 				}
 
-				else if(strcmp(sensor.task_name,"BEA") == 0)
-				{
-					if(sensor.dg_mode == 0)
-					{
-					//	strcpy(buffer,"INFO In normal operation\n");
-					//	mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
-					}
-					else
-					{
-					//	strcpy(buffer,"WARN Degraded operation\n");
-					//	mq_send(msg_queue, buffer, MAX_BUFFER_SIZE, 0);
-					}
-				}
 			}
 
 		}
-		uart_close(uart4);
+		uart_close(uart4); // Close UART4 file descriptor
+		pthread_cancel(communication_thread);
 	}
+	return 0;
 }

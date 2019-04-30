@@ -1,3 +1,11 @@
+/**
+ * @\file	server.c
+ * @\author	Sanju Prakash Kannioth and Steve Antony X
+ * @\brief	This files contains the function definitions for server socket
+ * @\date	04/29/2019
+ *
+ */
+
 #include "server.h"
 /*****************************************************************
                         Globals
@@ -73,7 +81,6 @@ void *remote_request_callback()
     char right = 'r';
     char stop = 's';
     char clean = 'o';
-    bool auto_enable = 0;
 
     char mode_send[10];
     char waterLevel_send[10];
@@ -159,7 +166,6 @@ void *remote_request_callback()
       	  strcpy(mode_send, get_mode());
       	  send(new_socket, mode_send, 10, 0);
        	
-	  printf("MODE SENT TO PYQT = %s\n",mode_send); 
       	  strcpy(dgMode_send, get_dgMode());
       	  send(new_socket, dgMode_send, 10, 0);
 
@@ -171,8 +177,7 @@ void *remote_request_callback()
 
           strcpy(lux_opstatus_send, get_opStatus_lux());
           send(new_socket, lux_opstatus_send, 10, 0);
-	  printf("LUX SENT TO PYQT = %s\n", lux_opstatus_send);
-
+	 
           strcpy(water_opstatus_send, get_opStatus_water());
           send(new_socket, water_opstatus_send, 10, 0);
 
@@ -187,7 +192,6 @@ void *remote_request_callback()
           pthread_mutex_lock(&lock_res);
           uart_send(uart2, &manual, sizeof(char));
           pthread_mutex_unlock(&lock_res);
-          auto_enable = 0;
         }
 
         else if(strcmp(buffer,"auto")==0)
@@ -197,7 +201,6 @@ void *remote_request_callback()
           pthread_mutex_lock(&lock_res);
           uart_send(uart2, &automatic, sizeof(char));
           pthread_mutex_unlock(&lock_res);
-          auto_enable = 1;
         }
 
         else if(strcmp(buffer,"up")==0)

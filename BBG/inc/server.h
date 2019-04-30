@@ -1,3 +1,11 @@
+/**
+ * @\file	server.h
+ * @\author	Sanju Prakash Kannioth and Steve Antony X
+ * @\brief	This files contains the declarations and header files for server socket
+ * @\date	04/29/2019
+ *
+ */
+
 #ifndef SERVER_H
 #define SERVER_H
 
