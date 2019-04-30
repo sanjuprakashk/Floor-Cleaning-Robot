@@ -43,6 +43,7 @@ static uint8_t start_again = 1;
 
 void LightTask(void *pvParameters)
 {
+    vTaskDelay(3000/portTICK_PERIOD_MS);
     UARTprintf("Created Light Task\n");
 
         long x_light_id = 10005;
@@ -70,7 +71,7 @@ void LightTask(void *pvParameters)
             int8_t ret = lux_sensor_setup();
             if(ret == -1)
             {
-                UARTprintf("Startup test failed for lux sensor\n");
+                UARTprintf("Startup failed for lux\n");
                 LOG_ERROR("Killed lux sensor task - Startup failed\n")
                 vTaskDelete( NULL );
             }
@@ -151,20 +152,17 @@ int8_t lux_sensor_setup()
     register_data = 0x00;
     read_byte_i2c2(LIGHT_SENSOR, CONTROL_REGISTER, &register_data);
 
-    UARTprintf("0x03 --> %x",register_data);
-    if((register_data == 0x03) || (register_data == 0x33) )
+    //UARTprintf("0x03 --> %x",register_data);
+    if((register_data == 0x00))
     {
-        flag = 0;
+        return -1;
     }
 
     /*command to write on TIMING_REGISTER*/
     register_data = 0x12;
     write_byte_i2c2(LIGHT_SENSOR, TIMING_REGISTER, register_data);
 
-    if(flag == 0)
-        return 0;
-    else
-        return -1;
+    return 0;
 
 }
 

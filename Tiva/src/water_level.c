@@ -20,6 +20,7 @@ char temp_buffer[100];
 /*water level task*/
 void Water_level(void *pvParameters)
 {
+    vTaskDelay(1000/portTICK_PERIOD_MS);
     UARTprintf("Water level task\n");
     uint32_t Water_level_data;
 

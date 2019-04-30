@@ -115,6 +115,7 @@ void PortFIntHandler()
 
 void UtrasonicTask(void *pvParameters)
 {
+    vTaskDelay(1000/portTICK_PERIOD_MS);
     UARTprintf("Created ultrasonic thread\n");
     long x_ultra_id = 1003;
     xTimerHandle xTimer_ult;
@@ -144,10 +145,12 @@ void UtrasonicTask(void *pvParameters)
          //startup test
          find_object();
          vTaskDelay(500/portTICK_PERIOD_MS);
+
+
          if(time_pulse == 0)
          {
              UARTprintf("Startup test failed for ultrasonic sensor\n");
-             LOG_ERROR("Killed ultrasonic sensor task - Startup failed\n")
+             LOG_ERROR("Startup failed for ULTRASONIC\n")
              DEGRADED_MODE_MANUAL = 1;
              mode = 1;
              vTaskDelete( NULL );
